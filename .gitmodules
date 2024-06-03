@@ -1,3 +1,4 @@
 [submodule "stix2arango"]
 	path = stix2arango
 	url = https://github.com/muchdogesec/stix2arango
+	branch = main
