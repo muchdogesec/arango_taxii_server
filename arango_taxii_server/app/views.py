@@ -23,8 +23,8 @@ def get_added_date_headers(objects, key='created'):
         return {"X-TAXII-Date-Added-First": None, "X-TAXII-Date-Added-Last": None}
     first, last = objects[0], objects[-1]
     if key:
-        first = first[key]
-        last  = last[key]
+        first = first.get(key)
+        last  = last.get(key)
     return {"X-TAXII-Date-Added-First": first, "X-TAXII-Date-Added-Last": last}
 
 def get_status(id):
