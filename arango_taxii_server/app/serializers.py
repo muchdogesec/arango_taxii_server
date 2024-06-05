@@ -90,39 +90,50 @@ class ManifestSerializer(TaxiiEnvelopeSerializer):
 
 
 @extend_schema_serializer(examples=[OpenApiExample('example', value={"objects":[
-    {
-            "type": "bank-card",
-            "spec_version": "2.1",
-            "id": "bank-card--141f2719-a508-53de-b86f-4803d66a48e1",
-            "number": "38520000023237",
-            "extensions": {
-                "extension-definition--abd6fc0e-749e-4e6c-a20c-1faa419f5ee4": {
-                    "extension_type": "new-sco"
-                }
-            }
-        },
         {
-            "type": "directory",
+            "type": "threat-actor",
             "spec_version": "2.1",
-            "id": "directory--cee3410d-3058-50b0-ba80-7b8256349595",
-            "path": "\\\\?\\C:\\Test\\Foo"
-        },
-        {
-            "type": "software",
-            "spec_version": "2.1",
-            "id": "software--a11b7906-7775-47ea-a97d-55c3968d2c9f",
-            "name": "Google Chrome NEW",
-            "cpe": "cpe:2.3:a:google:chrome:9999.999:*:*:*:*:*:*:*",
-            "swid": "9999.999",
-            "languages": [
-                "en"
+            "id": "threat-actor--dfaa8d77-07e2-4e28-b2c8-92e9f7b04428",
+            "created": "2014-11-19T23:39:03.893Z",
+            "modified": "2014-11-19T23:39:03.893Z",
+            "name": "Disco Team Threat Actor Group",
+            "description": "This organized threat actor group operates to create profit from all types of crime.",
+            "threat_actor_types": [
+                "crime-syndicate"
             ],
-            "vendor": "google",
-            "version": "9999.999",
-            "object_marking_refs": [
-                "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9",
-                "marking-definition--de23ef3b-83bf-56a9-95c3-46bc1703966c"
-            ]
+            "aliases": [
+                "Equipo del Discoteca"
+            ],
+            "roles": [
+                "agent"
+            ],
+            "goals": [
+                "Steal Credit Card Information"
+            ],
+            "sophistication": "expert",
+            "resource_level": "organization",
+            "primary_motivation": "personal-gain"
+        },
+        {
+            "type": "identity",
+            "spec_version": "2.1",
+            "id": "identity--733c5838-34d9-4fbf-949c-62aba761184c",
+            "created": "2016-08-23T18:05:49.307Z",
+            "modified": "2016-08-23T18:05:49.307Z",
+            "name": "Disco Team",
+            "description": "Disco Team is the name of an organized threat actor crime-syndicate.",
+            "identity_class": "organization",
+            "contact_information": "disco-team@stealthemail.com"
+        },
+        {
+            "type": "relationship",
+            "spec_version": "2.1",
+            "id": "relationship--a2e3efb5-351d-4d46-97a0-6897ee7c77a0",
+            "created": "2020-02-29T18:01:28.577Z",
+            "modified": "2020-02-29T18:01:28.577Z",
+            "relationship_type": "attributed-to",
+            "source_ref": "threat-actor--dfaa8d77-07e2-4e28-b2c8-92e9f7b04428",
+            "target_ref": "identity--733c5838-34d9-4fbf-949c-62aba761184c"
         }
 ]})])
 class ObjectSerializer(TaxiiEnvelopeSerializer):
