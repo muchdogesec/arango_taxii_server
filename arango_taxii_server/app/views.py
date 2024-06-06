@@ -17,15 +17,27 @@ from . import arango_helper, open_api_schemas, serializers, models
 from .serializers import ServerInfoSerializer
 from enum import StrEnum
 from django.shortcuts import get_object_or_404
+
+def date_cmp(iterable, max=True):
+    value = None
+    for v in iterable:
+        if not v:
+            continue
+        elif not value:
+            value = v
+        elif max and v > value:
+            value = v
+        elif not max and v < value:
+            value = v
+    return value
     
-def get_added_date_headers(objects, key='created'):
+def get_added_date_headers(objects, first_key='created', last_key='modified'):
     if not objects:
         return {"X-TAXII-Date-Added-First": None, "X-TAXII-Date-Added-Last": None}
-    first, last = objects[0], objects[-1]
-    if key:
-        first = first.get(key)
-        last  = last.get("modified")
-    return {"X-TAXII-Date-Added-First": first, "X-TAXII-Date-Added-Last": last}
+    
+    first_min = date_cmp(map(lambda obj: obj if first_key is None else obj.get(first_key), objects), max=False)
+    last_max = date_cmp(map(lambda obj: obj if last_key is None else obj.get(last_key), objects), max=True)
+    return {"X-TAXII-Date-Added-First": first_min, "X-TAXII-Date-Added-Last": last_max}
 
 def get_status(id):
     try:
@@ -117,7 +129,7 @@ class CollectionView(ArangoView, viewsets.ViewSet):
         manifest = db.get_objects_all(api_root, collection_id, request.query_params, 'manifest')
         s = serializers.ManifestSerializer(data={"objects": manifest.result, "more": manifest.dict["hasMore"], "next": manifest.dict.get("id")})
         s.is_valid()
-        return Response(s.data, headers=get_added_date_headers(manifest.result, key='date_added'))
+        return Response(s.data, headers=get_added_date_headers(manifest.result, first_key='date_added', last_key='date_added'))
 
 class ObjectView(ArangoView, viewsets.ViewSet):
     serializer_class = serializers.ObjectSerializer
@@ -165,10 +177,11 @@ class ObjectView(ArangoView, viewsets.ViewSet):
         objects = db.get_objects_all(api_root, collection_id, {"match[version]": "all", **request.query_params.dict(), "match[id]": object_id}, "versions")
         s = serializers.VersionsSerializer(data={"versions": objects.result, "more": objects.dict["hasMore"], "next": objects.dict.get("id")})
         s.is_valid()
-        return Response(s.data, headers=get_added_date_headers(objects.result, key=None))
+        return Response(s.data, headers=get_added_date_headers(objects.result, first_key=None, last_key=None))
 
     @extend_schema(tags=open_api_schemas.OpenApiTags.COLLECTIONS.tags, summary="Delete a specific object from a collection", responses={200:{}, **serializers.TaxiiErrorSerializer.error_responses()})
     def destroy(self, request:Request, api_root="", collection_id="", object_id=""):
         db: arango_helper.ArangoSession =  request.user.arango_session
         db.remove_object(api_root, collection_id, object_id)
         return Response()
+
