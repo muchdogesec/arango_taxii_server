@@ -96,7 +96,7 @@ limit_query = OpenApiParameter(
 
 next_query = OpenApiParameter(
     "next",
-    type=int,
+    type=OpenApiTypes.STR,
     description=dedent(
         """
     A single string value that indicates the next record or set of records in the dataset that the client is requesting.

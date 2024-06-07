@@ -128,10 +128,13 @@ class ArangoSession:
         url = urljoin(self.HOST_URL, f"/_db/{db_name}/_api/cursor/")
         payload = None
         if next:=query_params.get('next'):
-            url = urljoin(url, next)
+            cursor_id, batch_id = next.split('_')
+            url = urljoin(url, cursor_id)
         else:
             payload = self.build_query(collection_id, query_params, query_type)
         resp = self.parse_response(self.session.post(url, json=payload))
+        if resp.dict.get('hasMore'):
+            resp.dict['next'] = f"{resp.dict['id']}_{resp.dict['nextBatchId']}"
         return resp
 
     def remove_object(self, db_name, collection, object_id):
@@ -206,7 +209,6 @@ class ArangoSession:
                 binding.pop('versions', None)
 
         if batchSize := query_params.get('limit'):
-            print(batchSize)
             retval['batchSize'] = int(batchSize)
         
         if added_after := query_params.get('added_after'):

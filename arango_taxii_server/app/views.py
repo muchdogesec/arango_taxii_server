@@ -127,7 +127,7 @@ class CollectionView(ArangoView, viewsets.ViewSet):
     def manifest(self, request, api_root="", collection_id=""):
         db: arango_helper.ArangoSession =  request.user.arango_session
         manifest = db.get_objects_all(api_root, collection_id, request.query_params, 'manifest')
-        s = serializers.ManifestSerializer(data={"objects": manifest.result, "more": manifest.dict["hasMore"], "next": manifest.dict.get("id")})
+        s = serializers.ManifestSerializer(data={"objects": manifest.result, "more": manifest.dict["hasMore"], "next": manifest.dict.get("next")})
         s.is_valid()
         return Response(s.data, headers=get_added_date_headers(manifest.result, first_key='date_added', last_key='date_added'))
 
@@ -162,7 +162,7 @@ class ObjectView(ArangoView, viewsets.ViewSet):
     def list(self, request: Request, api_root="", collection_id="", more_queries={}):
         db: arango_helper.ArangoSession =  request.user.arango_session
         objects = db.get_objects_all(api_root, collection_id, {**request.query_params.dict(), **more_queries}, "objects")
-        s = serializers.ObjectSerializer(data={"objects": objects.result, "more": objects.dict["hasMore"], "next": objects.dict.get("id")})
+        s = serializers.ObjectSerializer(data={"objects": objects.result, "more": objects.dict["hasMore"], "next": objects.dict.get("next")})
         s.is_valid()
         return Response(s.data, headers=get_added_date_headers(objects.result))
 
@@ -175,7 +175,7 @@ class ObjectView(ArangoView, viewsets.ViewSet):
     def versions(self, request:Request, api_root="", collection_id="", object_id=""):
         db: arango_helper.ArangoSession =  request.user.arango_session
         objects = db.get_objects_all(api_root, collection_id, {"match[version]": "all", **request.query_params.dict(), "match[id]": object_id}, "versions")
-        s = serializers.VersionsSerializer(data={"versions": objects.result, "more": objects.dict["hasMore"], "next": objects.dict.get("id")})
+        s = serializers.VersionsSerializer(data={"versions": objects.result, "more": objects.dict["hasMore"], "next": objects.dict.get("next")})
         s.is_valid()
         return Response(s.data, headers=get_added_date_headers(objects.result, first_key=None, last_key=None))
 

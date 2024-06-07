@@ -60,13 +60,13 @@ class StixObjectField(serializers.DictField):
 
 class TaxiiEnvelopeSerializer(serializers.Serializer):
     more = serializers.BooleanField(default=False)
-    next = serializers.IntegerField(required=False)
+    next = serializers.CharField(required=False)
     objects = serializers.ListField(child=StixObjectField())
 
 
 @extend_schema_serializer(examples=[OpenApiExample('example', value={
   "more": True,
-  "next": 34617997,
+  "next": "34617997_44",
   "objects": [
     {
       "date_added": "2020-10-16T00:00:00.000Z",
