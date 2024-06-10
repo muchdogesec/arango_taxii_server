@@ -34,6 +34,8 @@ Note, this script will not install an ArangoDB instance.
 
 If you're new to ArangoDB, [you can install the community edition quickly by following the instructions here](https://arangodb.com/community-server/).
 
+If you are running ArangoDB locally, be sure to set `ARANGODB='http://host.docker.internal:8529/'` in the `.env` file otherwise you will run into networking errors.
+
 ### Build the Docker Image
 
 ```shell

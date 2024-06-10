@@ -1,8 +1,62 @@
-# python3 -m unittest tests/test_0-no_access_user.py
-
-import pytest
+import unittest
 import requests
 from requests.auth import HTTPBasicAuth
 
 BASE_URL = "http://127.0.0.1:8000"
 AUTH = HTTPBasicAuth('no_access_user', 'testing123')
+
+EXPECTED_RESPONSE_BODY_1 = {
+    "title": "Arango TAXII Server",
+    "description": "https://github.com/muchdogesec/arango_taxii_server/",
+    "contact": "noreply@dogesec.com",
+    "api_roots": []
+}
+EXPECTED_RESPONSE_BODY_2 = {
+    "title": "remote error: 1228 - database not found",
+    "http_status": 404,
+    "details": {
+        "content": None
+    }
+}
+EXPECTED_CONTENT_TYPE = "application/taxii+json;version=2.1"
+
+class TestTaxiiEndpoint(unittest.TestCase):
+
+    def test_taxii_root_endpoint(self):
+        url = f"{BASE_URL}/api/taxii2/"
+        response = requests.get(url, auth=AUTH)
+
+        # Assert that the request was successful
+        self.assertEqual(response.status_code, 200, f"Expected status code 200, but got {response.status_code}")
+
+        # Assert that the response body matches the expected structure
+        response_json = response.json()
+        self.assertEqual(response_json, EXPECTED_RESPONSE_BODY_1, f"Expected response body {EXPECTED_RESPONSE_BODY_1}, but got {response_json}")
+
+        # Assert that the Content-Type header is correct
+        self.assertEqual(response.headers['content-type'], EXPECTED_CONTENT_TYPE, f"Expected Content-Type {EXPECTED_CONTENT_TYPE}, but got {response.headers['content-type']}")
+
+        # Print response body and headers for debugging purposes
+        print("Response Body:", response_json)
+        print("Response Headers:", response.headers)
+
+    def test_taxii_collections_endpoint(self):
+        url = f"{BASE_URL}/api/taxii2/arango_cti_processor_tests_database/collections/"
+        response = requests.get(url, auth=AUTH)
+
+        # Assert that the request was unsuccessful (404 Not Found)
+        self.assertEqual(response.status_code, 404, f"Expected status code 404, but got {response.status_code}")
+
+        # Assert that the response body matches the expected structure
+        response_json = response.json()
+        self.assertEqual(response_json, EXPECTED_RESPONSE_BODY_2, f"Expected response body {EXPECTED_RESPONSE_BODY_2}, but got {response_json}")
+
+        # Assert that the Content-Type header is correct
+        self.assertEqual(response.headers['content-type'], EXPECTED_CONTENT_TYPE, f"Expected Content-Type {EXPECTED_CONTENT_TYPE}, but got {response.headers['content-type']}")
+
+        # Print response body and headers for debugging purposes
+        print("Response Body:", response_json)
+        print("Response Headers:", response.headers)
+
+if __name__ == "__main__":
+    unittest.main()
