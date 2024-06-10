@@ -43,3 +43,4 @@ urllib3==2.2.1; python_version >= '3.8'
 vine==5.1.0; python_version >= '3.6'
 wcwidth==0.2.13
 zipp==3.18.2; python_version >= '3.8'
+pytest==8.2.2; python_version >= '3.8'
