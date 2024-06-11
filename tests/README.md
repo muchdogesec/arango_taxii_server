@@ -27,7 +27,7 @@ This will install the entire MITRE ATT&CK archive into ArangoDB into a database 
 To test permissions, setup 3 users in your local Arango instance by 
 
 ```shell
-python3 python3 tests/create_required_users.py
+python3 tests/create_required_users.py
 ```
 
 Which adds 4 users with the following usernames (all with password `testing123`)
