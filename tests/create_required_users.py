@@ -7,7 +7,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Get environment variables
-ARANGODB = os.getenv("ARANGODB")
+ARANGODB = "http://127.0.0.1:8529/"
 
 # Admin credentials
 ADMIN_USERNAME = "root"
@@ -93,23 +93,21 @@ if __name__ == "__main__":
         add_user(username, password)
         # Revoke access to the _system database for each user
         set_database_permissions(username, "_system", "none")
-        # Grant access to the arango_cti_processor_tests_database
-        set_database_permissions(username, "arango_cti_processor_tests_database", "rw")
-    
+
     # Set read/write permissions for read_write_user on specified collections
     for collection in collections:
-        set_collection_permissions("read_write_user", "arango_cti_processor_tests_database", collection, "rw")
+        set_collection_permissions("read_write_user", "arango_taxii_server_tests_database", collection, "rw")
     
     # Set read permissions for read_user on specified collections
     for collection in collections:
-        set_collection_permissions("read_user", "arango_cti_processor_tests_database", collection, "ro")
+        set_collection_permissions("read_user", "arango_taxii_server_tests_database", collection, "ro")
     
     # Set no access permissions for no_access_user on specified collections
     for collection in collections:
-        set_collection_permissions("no_access_user", "arango_cti_processor_tests_database", collection, "none")
+        set_collection_permissions("no_access_user", "arango_taxii_server_tests_database", collection, "none")
     
     # Set permissions for bad_permission_user
-    set_collection_permissions("bad_permission_user", "arango_cti_processor_tests_database", "mitre_attack_enterprise_vertex_collection", "rw")
+    set_collection_permissions("bad_permission_user", "arango_taxii_server_tests_database", "mitre_attack_enterprise_vertex_collection", "rw")
     for collection in collections:
         if collection != "mitre_attack_enterprise_vertex_collection":
-            set_collection_permissions("bad_permission_user", "arango_cti_processor_tests_database", collection, "none")
+            set_collection_permissions("bad_permission_user", "arango_taxii_server_tests_database", collection, "none")

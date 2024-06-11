@@ -62,6 +62,8 @@ It is STRONGLY recommend you seed your ArangoDB database using [stix2arango](htt
 * All edge collections should be suffixed with `_edge_collection` (e.g. `my_taxii_edge_collection`)
 * All vertex collections should be suffixed with `_vertex_collection` (e.g. `my_taxii_vertex_collection`)
 
+In the stix2arango README.md you will find some quick start guides that will import some common knowledgebase data into Arango which is very useful in demonstrating how your Databases and Collections should be structured to work with Arango TAXII Server.
+
 ### Git submodule use
 
 We try and keep this repo in sync with the remote cve2stix / cpe2stix repos used as Git submodules when changes happen.

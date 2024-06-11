@@ -66,4 +66,6 @@ SERVER_SUPPORT='https://community.dogesec.com/'
 
 ## Run tests
 
+* test_0: tests the `no_access_user` who should not be able to access most of the data.
+
 
