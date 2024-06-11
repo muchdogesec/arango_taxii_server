@@ -10,6 +10,7 @@ from rest_framework import decorators, generics, permissions, views, viewsets, r
 from rest_framework.request import Request
 # from rest_framework.response import Response
 from datetime import datetime as dt
+from rest_framework import renderers
 
 from . import task_helpers
 from .. import conf
@@ -17,6 +18,12 @@ from . import arango_helper, open_api_schemas, serializers, models
 from .serializers import ServerInfoSerializer
 from enum import StrEnum
 from django.shortcuts import get_object_or_404
+
+
+class TaxiiJSONRenderer(renderers.JSONRenderer):
+    media_type = conf.taxii_type.split(";")[0]
+    format = 'taxii2-json'
+
 
 def date_cmp(iterable, max=True):
     value = None
@@ -64,6 +71,7 @@ class ErrorResp(Response):
 
 class ArangoView(views.APIView):
     permission_classes = [permissions.IsAuthenticated]
+    renderer_classes = [TaxiiJSONRenderer]
     def handle_exception(self, exc):
         if isinstance(exc, arango_helper.ArangoError):
             return ErrorResp(exc.http_code, exc.message)

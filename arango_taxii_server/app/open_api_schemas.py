@@ -214,12 +214,6 @@ spectacular_settings.apply_patches({'TAGS': OpenApiTags.all()})
 class CustomAutoSchema(AutoSchema):
     global_params = [
         OpenApiParameter(
-            name="Accept",
-            type=dict(enum=[conf.taxii_type]),
-            location=OpenApiParameter.HEADER,
-            required=True,
-        ),
-        OpenApiParameter(
             name="Content-Type",
             location=OpenApiParameter.HEADER,
             response=True,
