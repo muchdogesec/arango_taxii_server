@@ -72,7 +72,7 @@ class ArangoSession:
         return list(resp.result.keys())
 
     def get_database(self, db_name):
-        url = urljoin(self.HOST_URL, f"/_api/user/{self.user}/database/{db_name}")
+        url = urljoin(self.HOST_URL, f"/_db/{db_name}/_api/user/{self.user}/database/{db_name}")
         resp = self.parse_response(self.session.get(url))
         return self.parse_permission(resp.result)
 

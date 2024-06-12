@@ -14,7 +14,6 @@ services:
             - DEBUG=1
             - DJANGO_ALLOWED_HOSTS=localhost 127.0.0.1 [::1]
             - CELERY_BROKER_URL=redis://redis:6379/0
-            - EXTERNAL_SERVICE_URL=http://host.docker.internal:8529/ # This is arango
         env_file:
             - ./.env
         depends_on:
