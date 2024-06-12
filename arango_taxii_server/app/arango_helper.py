@@ -1,8 +1,7 @@
 import os
+import random
 import re
 import subprocess
-import sys
-import tempfile
 from urllib.parse import urljoin, urlparse
 
 import requests
@@ -134,7 +133,7 @@ class ArangoSession:
             payload = self.build_query(collection_id, query_params, query_type)
         resp = self.parse_response(self.session.post(url, json=payload))
         if resp.dict.get('hasMore'):
-            resp.dict['next'] = f"{resp.dict['id']}_{resp.dict['nextBatchId']}"
+            resp.dict['next'] = f"{resp.dict['id']}_{resp.dict.get('nextBatchId', f'undef+{random.random()}')}"
         return resp
 
     def remove_object(self, db_name, collection, object_id):
