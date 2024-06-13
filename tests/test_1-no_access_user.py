@@ -2,8 +2,8 @@
 
 import unittest
 import requests
-from requests.auth import HTTPBasicAuth  # Add this import
-from .base_test import BaseTest, API_ROOT, BAD_API_ROOT, EXPECTED_404_ERROR_RESPONSE, users
+from requests.auth import HTTPBasicAuth
+from .base_test import BaseTest, API_ROOT, BAD_API_ROOT, EXPECTED_404_ERROR_RESPONSE, users, LIST_OF_COLLECTIONS
 
 EXPECTED_RESPONSE_BODY_1 = {
     "title": "Arango TAXII Server",
@@ -52,7 +52,7 @@ class TestTaxiiEndpoint(BaseTest):
         response_json = response.json()
         self.assertEqual(response_json, EXPECTED_404_ERROR_RESPONSE, f"Expected response body {EXPECTED_404_ERROR_RESPONSE}, but got {response_json}")
 
-    # this test should return a 404 EXPECTED_404_ERROR_RESPONSE because this collection does not exist on the server
+    # this test should return a 404 EXPECTED_404_ERROR_RESPONSE because the API Root does not exist
     def test_cti_bad_api_root_endpoint(self):
         url = f"{self.base_url}/api/taxii2/{BAD_API_ROOT}/"
         try:
@@ -67,9 +67,9 @@ class TestTaxiiEndpoint(BaseTest):
         response_json = response.json()
         self.assertEqual(response_json, EXPECTED_404_ERROR_RESPONSE, f"Expected response body {EXPECTED_404_ERROR_RESPONSE}, but got {response_json}")
 
-    # this test should return a 404 EXPECTED_404_ERROR_RESPONSE because this collection does not exist on the server
+    # this test should return a 404 EXPECTED_404_ERROR_RESPONSE because although this API_ROOT and COLLECTIONS exist this user cannot see any collections
     def test_arango_taxii_server_tests_collections_endpoint(self):
-        url = f"{self.base_url}/api/taxii2/{API_ROOT}/collections/"
+        url = f"{self.base_url}/api/taxii2/arango_taxii_server_tests/collections/"
         try:
             response = requests.get(url, auth=self.auth, headers=self.headers)
         except requests.RequestException as e:
@@ -81,6 +81,22 @@ class TestTaxiiEndpoint(BaseTest):
         # Assert that the response body matches the expected error structure
         response_json = response.json()
         self.assertEqual(response_json, EXPECTED_404_ERROR_RESPONSE, f"Expected response body {EXPECTED_404_ERROR_RESPONSE}, but got {response_json}")
+
+    # this test should return a 404 EXPECTED_404_ERROR_RESPONSE because the collection does not exist on the server
+    def test_collections_objects_endpoint(self):
+        for collection_id in LIST_OF_COLLECTIONS:
+            url = f"{self.base_url}/api/taxii2/{API_ROOT}/collections/{collection_id}/objects/"
+            try:
+                response = requests.get(url, auth=self.auth, headers=self.headers)
+            except requests.RequestException as e:
+                self.fail(f"Request to {url} failed with exception {e}")
+
+            # Assert that the request resulted in a 404 status code
+            self.assertEqual(response.status_code, 404, f"Expected status code 404 for {collection_id}, but got {response.status_code}")
+
+            # Assert that the response body matches the expected error structure
+            response_json = response.json()
+            self.assertEqual(response_json, EXPECTED_404_ERROR_RESPONSE, f"Expected response body {EXPECTED_404_ERROR_RESPONSE} for {collection_id}, but got {response_json}")
 
 if __name__ == "__main__":
     unittest.main()
