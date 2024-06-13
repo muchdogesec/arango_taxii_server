@@ -4,3 +4,4 @@ __pycache__/
 db.sqlite3
 # tests
 arango_taxii_server-venv
+.pytest_cache

@@ -12,11 +12,15 @@ pip3 install -r requirements.txt
 
 ### Import required data
 
+Download and setup a stix2arango install outside of arango_taxii_server (do not use the one that ships with this codebase).
+
+Once done can then run...
+
 ```shell
-python3 stix2arango/utilities/arango_taxii_server_import_test_data.py
+python3 utilities/arango_taxii_server_import_test_data.py
 ```
 
-This will install the entire MITRE ATT&CK archive into ArangoDB into a database called `cti_database` with each dataset in the following collections:
+This will install the entire MITRE ATT&CK archive into ArangoDB into a database called `arango_taxii_server_tests` with each dataset in the following collections:
 
 * `mitre_attack_enterprise_vertex_collection`/`mitre_attack_enterprise_edge_collection`
 * `mitre_attack_ics_vertex_collection`/`mitre_attack_ics_edge_collection`
@@ -37,18 +41,17 @@ Which adds 4 users with the following usernames (all with password `testing123`)
 * `no_access_user` (permissions, no access all `mitre_attack_*_vertex_collection`/`mitre_attack_*_edge_collection`)
 * `bad_permission_user` (permissions, read/write access to `mitre_attack_enterprise_vertex_collection` and no access to all other `mitre_attack_*_vertex_collection`/`mitre_attack_*_edge_collection`)
 
-You should check permissions are correctly assigned, as this script is not paticularly robust.
+**IMPORTANT**: You should check permissions are correctly assigned the UI before continuing. The script is not paticularly robust and I have had a number of reports of 500s being thrown on different ArangoDB installs.
 
-Here's an example of what `read_write_user` permissions should look like:
+To make it a bit clearer, here's an example of what `read_write_user` permissions should look like:
 
 ![](example_permissions.png)
 
-
-### Set `.env` file
+### Set `.env` file for arango_taxii_server
 
 ```
 # ARANGO
-ARANGODB='http://127.0.0.1:8529/'
+ARANGODB='http://host.docker.internal:8529/'
 # CELERY
 CELERY_BROKER_CONNECTION_RETRY_ON_STARTUP=1
 # POSTGRES
@@ -64,8 +67,17 @@ SERVER_EMAIL='noreply@dogesec.com'
 SERVER_SUPPORT='https://community.dogesec.com/'
 ```
 
-## Run tests
+## Test descriptions
 
-* test_0: tests the `no_access_user` who should not be able to access most of the data.
+* test_0: ensures that when no credentials are provided 401s are returned
+* test_1: tests the `no_access_user` who should not be able to access most of the endpoints as they have no read access to any of the collections
 
+## Running tests
 
+Run 
+
+```shell
+pytest
+```
+
+from the root directory of this code.
