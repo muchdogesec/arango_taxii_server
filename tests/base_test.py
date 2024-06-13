@@ -1,5 +1,10 @@
 import unittest
 import requests
+import logging
+
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 USERS = {
     "read_write_user": "testing123",
@@ -150,5 +155,8 @@ class BaseTest(unittest.TestCase):
 
     def check_response(self, method, url, expected_status):
         response = getattr(requests, method.lower())(url, headers=self.headers)
+        logger.info(f"URL: {url}")
+        logger.info(f"Method: {method}")
+        logger.info(f"Status Code: {response.status_code}")
+        logger.info(f"Response Body: {response.text}")
         self.assertEqual(response.status_code, expected_status["http_status"])
-
