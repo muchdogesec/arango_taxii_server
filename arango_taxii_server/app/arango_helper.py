@@ -3,6 +3,7 @@ import random
 import re
 import subprocess
 from urllib.parse import urljoin, urlparse
+from django.conf import settings
 
 import requests
 
@@ -207,8 +208,8 @@ class ArangoSession:
             else:
                 binding.pop('versions', None)
 
-        if batchSize := query_params.get('limit'):
-            retval['batchSize'] = int(batchSize)
+        batchSize = query_params.get('limit', settings.DEFAULT_PAGINATION_LIMIT)
+        retval['batchSize'] = int(batchSize)
         
         if added_after := query_params.get('added_after'):
             AQL += """
