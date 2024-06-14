@@ -28,7 +28,7 @@ This will install the entire MITRE ATT&CK archive into ArangoDB into a database 
 
 ### Configure Arango users for testing
 
-To test permissions, setup 3 users in your local Arango instance by 
+To test permissions, setup 4 users in your local Arango instance by 
 
 ```shell
 python3 tests/create_required_users.py
@@ -40,6 +40,9 @@ Which adds 4 users with the following usernames (all with password `testing123`)
 * `read_user` (permissions, read to all `mitre_attack_*_vertex_collection`/`mitre_attack_*_edge_collection`)
 * `no_access_user` (permissions, no access all `mitre_attack_*_vertex_collection`/`mitre_attack_*_edge_collection`)
 * `bad_permission_user` (permissions, read/write access to `mitre_attack_enterprise_vertex_collection` and no access to all other `mitre_attack_*_vertex_collection`/`mitre_attack_*_edge_collection`)
+
+
+You also need to have the default `root` user on your install with an empty password (the default). If you've changed this password, make sure to modify it in `base_test.py`.
 
 **IMPORTANT**: You should check permissions are correctly assigned the UI before continuing. The script is not paticularly robust and I have had a number of reports of 500s being thrown on different ArangoDB installs.
 

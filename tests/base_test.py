@@ -11,6 +11,7 @@ USERS = {
     "read_user": "testing123",
     "no_access_user": "testing123",
     "bad_permission_user": "testing123",
+    "root": ""
 }
 
 BASE_URL = "http://127.0.0.1:8000"
@@ -64,65 +65,70 @@ VALID_MITRE_ATTACK_ENTERPRISE_COLLECTION_EMBEDDED_RELATIONSHIP_IDS = [
 
 VALID_STIX_OBJECTS_FOR_POST = [
     {
-        "type": "indicator",
-        "spec_version": "2.1",
-        "id": "indicator--adb149cb-dac4-5e81-b6c3-f7354477a1df",
-        "created_by_ref": "identity--562918ee-d5da-5579-b6a1-fae50cc6bad3",
-        "created": "2002-07-23T04:00:00.000Z",
-        "modified": "2008-09-05T20:28:38.523Z",
-        "name": "CVE-2002-0672",
-        "description": "Pingtel xpressa SIP-based voice-over-IP phone 1.2.5 through 1.2.7.4 allows attackers with physical access to restore the phone to factory defaults without authentication via a menu option, which sets the administrator password to null.",
-        "indicator_types": [
-            "compromised"
-        ],
-        "pattern": "([(software:cpe='cpe:2.3:h:pingtel:xpressa:1.2.5:*:*:*:*:*:*:*') OR (software:cpe='cpe:2.3:h:pingtel:xpressa:1.2.7.4:*:*:*:*:*:*:*')])",
-        "pattern_type": "stix",
-        "pattern_version": "2.1",
-        "valid_from": "2002-07-23T04:00:00Z",
-        "external_references": [
+        "objects": [
             {
-                "source_name": "cve",
-                "url": "https://nvd.nist.gov/vuln/detail/CVE-2002-0672",
-                "external_id": "CVE-2002-0672"
-            }
-        ],
-        "object_marking_refs": [
-            "marking-definition--94868c89-83c2-464b-929b-a1a8aa3c8487",
-            "marking-definition--562918ee-d5da-5579-b6a1-fae50cc6bad3"
-        ]
-    },
-    {
-        "type": "indicator",
-        "spec_version": "2.1",
-        "id": "indicator--522d3b88-5a0f-5155-a9fa-f4eb81f245ed",
-        "created_by_ref": "identity--562918ee-d5da-5579-b6a1-fae50cc6bad3",
-        "created": "1999-12-01T05:00:00.000Z",
-        "modified": "2008-09-09T12:36:03.397Z",
-        "name": "CVE-1999-0857",
-        "description": "FreeBSD gdc program allows local users to modify files via a symlink attack.",
-        "indicator_types": [
-            "compromised"
-        ],
-        "pattern": "([(software:cpe='cpe:2.3:o:freebsd:freebsd:3.3:*:*:*:*:*:*:*' OR software:cpe='cpe:2.3:o:freebsd:freebsd:3.3:-:*:*:*:*:*:*' OR software:cpe='cpe:2.3:o:freebsd:freebsd:3.3:rc:*:*:*:*:*:*')])",
-        "pattern_type": "stix",
-        "pattern_version": "2.1",
-        "valid_from": "1999-12-01T05:00:00Z",
-        "external_references": [
+                "type": "indicator",
+                "spec_version": "2.1",
+                "id": "indicator--adb149cb-dac4-5e81-b6c3-f7354477a1df",
+                "created_by_ref": "identity--562918ee-d5da-5579-b6a1-fae50cc6bad3",
+                "created": "2002-07-23T04:00:00.000Z",
+                "modified": "2008-09-05T20:28:38.523Z",
+                "name": "CVE-2002-0672",
+                "description": "Pingtel xpressa SIP-based voice-over-IP phone 1.2.5 through 1.2.7.4 allows attackers with physical access to restore the phone to factory defaults without authentication via a menu option, which sets the administrator password to null.",
+                "indicator_types": [
+                    "compromised"
+                ],
+                "pattern": "([(software:cpe='cpe:2.3:h:pingtel:xpressa:1.2.5:*:*:*:*:*:*:*') OR (software:cpe='cpe:2.3:h:pingtel:xpressa:1.2.7.4:*:*:*:*:*:*:*')])",
+                "pattern_type": "stix",
+                "pattern_version": "2.1",
+                "valid_from": "2002-07-23T04:00:00Z",
+                "external_references": [
+                    {
+                        "source_name": "cve",
+                        "url": "https://nvd.nist.gov/vuln/detail/CVE-2002-0672",
+                        "external_id": "CVE-2002-0672"
+                    }
+                ],
+                "object_marking_refs": [
+                    "marking-definition--94868c89-83c2-464b-929b-a1a8aa3c8487",
+                    "marking-definition--562918ee-d5da-5579-b6a1-fae50cc6bad3"
+                ]
+            },
             {
-                "source_name": "cve",
-                "url": "https://nvd.nist.gov/vuln/detail/CVE-1999-0857",
-                "external_id": "CVE-1999-0857"
+                "type": "indicator",
+                "spec_version": "2.1",
+                "id": "indicator--522d3b88-5a0f-5155-a9fa-f4eb81f245ed",
+                "created_by_ref": "identity--562918ee-d5da-5579-b6a1-fae50cc6bad3",
+                "created": "1999-12-01T05:00:00.000Z",
+                "modified": "2008-09-09T12:36:03.397Z",
+                "name": "CVE-1999-0857",
+                "description": "FreeBSD gdc program allows local users to modify files via a symlink attack.",
+                "indicator_types": [
+                    "compromised"
+                ],
+                "pattern": "([(software:cpe='cpe:2.3:o:freebsd:freebsd:3.3:*:*:*:*:*:*:*' OR software:cpe='cpe:2.3:o:freebsd:freebsd:3.3:-:*:*:*:*:*:*' OR software:cpe='cpe:2.3:o:freebsd:freebsd:3.3:rc:*:*:*:*:*:*')])",
+                "pattern_type": "stix",
+                "pattern_version": "2.1",
+                "valid_from": "1999-12-01T05:00:00Z",
+                "external_references": [
+                    {
+                        "source_name": "cve",
+                        "url": "https://nvd.nist.gov/vuln/detail/CVE-1999-0857",
+                        "external_id": "CVE-1999-0857"
+                    }
+                ],
+                "object_marking_refs": [
+                    "marking-definition--94868c89-83c2-464b-929b-a1a8aa3c8487",
+                    "marking-definition--562918ee-d5da-5579-b6a1-fae50cc6bad3"
+                ]
             }
-        ],
-        "object_marking_refs": [
-            "marking-definition--94868c89-83c2-464b-929b-a1a8aa3c8487",
-            "marking-definition--562918ee-d5da-5579-b6a1-fae50cc6bad3"
         ]
     }
 ]
 
 # Expected error responses
 EXPECTED_RESPONSES = {
+    "200": {"http_status": 200},
     "400": {"http_status": 400}, # The server did not understand the request
     "401": {"http_status": 401}, # The client needs to authenticate
     "403": {"http_status": 403}, # The client does not have access to this resource
@@ -153,10 +159,36 @@ class BaseTest(unittest.TestCase):
         self.base_url = BASE_URL
         self.headers = REQUEST_HEADERS
 
-    def check_response(self, method, url, expected_status):
-        response = getattr(requests, method.lower())(url, headers=self.headers)
+    def check_response(self, method, url, expected_status, json=None, auth=None, test_number=None):
+        logger.info(f"===TEST {test_number}===")
+        if json:
+            response = getattr(requests, method.lower())(url, headers=self.headers, json=json, auth=auth)
+            logger.info(f"Request Body: {json}")
+        else:
+            response = getattr(requests, method.lower())(url, headers=self.headers, auth=auth)
         logger.info(f"URL: {url}")
         logger.info(f"Method: {method}")
+        logger.info(f"User: {auth.username if auth else 'No credentials used'}")
+        logger.info(f"Status Code: {response.status_code}")
+        logger.info(f"Response Body: {response.text}")
+        response_json = response.json()
+        self.assertEqual(response.status_code, expected_status["http_status"])
+        self.assertIn("title", response_json, "The response JSON should contain a 'title' field.")
+
+    def check_get_response(self, method, url, expected_status, expected_body, auth=None, test_number=None):
+        logger.info(f"===TEST {test_number}===")
+        response = getattr(requests, method.lower())(url, headers=self.headers, auth=auth)
+        logger.info(f"URL: {url}")
+        logger.info(f"Method: {method}")
+        logger.info(f"User: {auth.username if auth else 'No credentials used'}")
         logger.info(f"Status Code: {response.status_code}")
         logger.info(f"Response Body: {response.text}")
         self.assertEqual(response.status_code, expected_status["http_status"])
+        response_json = response.json()
+        objects = response_json.get("objects", [])
+        logger.info(f"Objects: {objects}")
+        if objects:
+            expected_id = expected_body["objects"][0]["id"]
+            self.assertTrue(any(obj["id"] == expected_id for obj in objects), f"Expected id: {expected_id} not found in response")
+        else:
+            self.assertEqual(objects, expected_body["objects"], "Expected empty objects list in response")
