@@ -72,8 +72,10 @@ SERVER_SUPPORT='https://community.dogesec.com/'
 
 ## Test descriptions
 
-* test_0: ensures that when no credentials are provided 401s are returned
-* test_1: tests the `no_access_user` who should not be able to access most of the endpoints as they have no read access to any of the collections
+Each tests tries all endpoints, including trying to add and delete objects.
+
+* `test_0-unauthenticated_requests.py`: ensures that when no credentials are provided 401s are returned from all endpoints and no POST / DELETE requests are implemented
+* `test_1-no_access_user.py`: tests the `no_access_user` who should not be able to access most of the endpoints as they have no read access to any of the collections. Should return 404s on all requests, except to `api/taxii2/` which should return a 200 with the TAXII server info, but not show any API Roots (as user has access to none)
 
 ## Running tests
 
