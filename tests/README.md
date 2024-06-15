@@ -1,4 +1,3 @@
-
 ## Setup a test Arango Instance
 
 ### Create test environment outside of Docker
@@ -69,20 +68,3 @@ SERVER_MAX_CONTENT_LENGTH=10485760
 SERVER_EMAIL='noreply@dogesec.com'
 SERVER_SUPPORT='https://community.dogesec.com/'
 ```
-
-## Test descriptions
-
-Each tests tries all endpoints, including trying to add and delete objects.
-
-* `test_0-unauthenticated_requests.py`: ensures that when no credentials are provided 401s are returned from all endpoints and no POST / DELETE requests are implemented
-* `test_1-no_access_user.py`: tests the `no_access_user` who should not be able to access most of the endpoints as they have no read access to any of the collections. Should return 404s on all requests, except to `api/taxii2/` which should return a 200 with the TAXII server info, but not show any API Roots (as user has access to none)
-
-## Running tests
-
-Run 
-
-```shell
-pytest
-```
-
-from the root directory of this code.
