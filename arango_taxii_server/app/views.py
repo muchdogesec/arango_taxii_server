@@ -137,7 +137,7 @@ class CollectionView(ArangoView, viewsets.ViewSet):
         manifest = db.get_objects_all(api_root, collection_id, request.query_params, 'manifest')
         s = serializers.ManifestSerializer(data={"objects": manifest.result, "more": manifest.dict["hasMore"], "next": manifest.dict.get("next")})
         s.is_valid()
-        return Response(s.data, headers=get_added_date_headers(manifest.result, first_key='date_added', last_key='date_added'))
+        return Response(s.data, headers=get_added_date_headers(manifest.result, first_key='date_added', last_key='version'))
 
 class ObjectView(ArangoView, viewsets.ViewSet):
     serializer_class = serializers.ObjectSerializer
