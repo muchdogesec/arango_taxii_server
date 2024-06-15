@@ -1,7 +1,7 @@
 import unittest
 import requests
 import logging
-from tests.test_variables import (USERS, BASE_URL, REQUEST_HEADERS, EXPECTED_RESPONSES)
+from tests.test_variables import BASE_URL, REQUEST_HEADERS, EXPECTED_RESPONSES
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -13,6 +13,10 @@ class BaseTest(unittest.TestCase):
         self.base_url = BASE_URL
         self.headers = REQUEST_HEADERS
 
+    def log_request_response_headers(self, response):
+        logger.info(f"Request Headers: {response.request.headers}")
+        logger.info(f"Response Headers: {response.headers}")
+
     def check_response(self, method, url, expected_status, json=None, auth=None, test_number=None, test_label=None):
         logger.info(f"===TEST {test_number} ({test_label})===")
         if json:
@@ -20,6 +24,7 @@ class BaseTest(unittest.TestCase):
             logger.info(f"Request Body: {json}")
         else:
             response = getattr(requests, method.lower())(url, headers=self.headers, auth=auth)
+        self.log_request_response_headers(response)
         logger.info(f"URL: {url}")
         logger.info(f"Method: {method}")
         logger.info(f"User: {auth.username if auth else 'No credentials used'}")
@@ -37,6 +42,7 @@ class BaseTest(unittest.TestCase):
     def check_get_response(self, method, url, expected_status, auth=None, test_number=None, test_label=None):
         logger.info(f"===TEST {test_number}===")
         response = getattr(requests, method.lower())(url, headers=self.headers, auth=auth)
+        self.log_request_response_headers(response)
         logger.info(f"URL: {url}")
         logger.info(f"Method: {method}")
         logger.info(f"User: {auth.username if auth else 'No credentials used'}")
@@ -51,6 +57,7 @@ class BaseTest(unittest.TestCase):
     def check_get_response_with_body(self, method, url, expected_status, expected_body, auth=None, test_number=None, test_label=None):
         logger.info(f"===TEST {test_number}===")
         response = getattr(requests, method.lower())(url, headers=self.headers, auth=auth)
+        self.log_request_response_headers(response)
         logger.info(f"URL: {url}")
         logger.info(f"Method: {method}")
         logger.info(f"User: {auth.username if auth else 'No credentials used'}")

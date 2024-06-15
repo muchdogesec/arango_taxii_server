@@ -1,9 +1,8 @@
 USERS = {
-    "read_write_user": "testing123",
-    "read_user": "testing123",
-    "no_access_user": "testing123",
-    "bad_permission_user": "testing123",
-    "root": ""
+    "read_write_user": "testing123", # this user has read/write permissions to collections in database arango_taxii_server_tests_database
+    "read_user": "testing123", # this user has read permissions to collections in database arango_taxii_server_tests_database
+    "no_access_user": "testing123", # this user has to permissions
+    "root": "" # this user has read/write permissions to all databases / collections
 }
 
 BASE_URL = "http://127.0.0.1:8000"
@@ -144,3 +143,152 @@ TAXII_ENDPOINTS = [
     {"endpoint": f"/api/taxii2/{API_ROOT}/collections/{{COLLECTION_ID}}/objects/{{OBJECT_ID}}/versions/", "method": "GET"},
     {"endpoint": f"/api/taxii2/{API_ROOT}/status/{{STATUS_ID}}/", "method": "GET"},
 ]
+
+
+#====NA USER====
+
+# {"endpoint": "/api/taxii2/", "method": "GET"},
+# api_roots is empty as user has no access to any collections
+
+no_access_user_expected_body_taxii2 = {
+    "title": "Arango TAXII Server",
+    "description": "https://github.com/muchdogesec/arango_taxii_server/",
+    "contact": "noreply@dogesec.com",
+    "api_roots": []
+}
+
+#====R + R/W USER====
+
+# {"endpoint": "/api/taxii2/", "method": "GET"},
+# api_roots contains the api roots user has access to
+
+read_user_expected_body_taxii2 = {
+    "title": "Arango TAXII Server",
+    "description": "https://github.com/muchdogesec/arango_taxii_server/",
+    "contact": "noreply@dogesec.com",
+    "api_roots": [
+        f"{BASE_URL}/api/taxii2/{API_ROOT}/"
+    ]
+}
+
+#====R + R/W USER====
+
+# {"endpoint": f"/api/taxii2/{API_ROOT}/", "method": "GET"},
+
+read_user_expected_body_taxii2_api_root = {
+    "max_content_length": 10485760,
+    "title": "arango_taxii_server_tests_database",
+    "versions": [
+        "application/stix+json;version=2.1"
+    ]
+}
+
+#====R USER====
+
+# {"endpoint": f"/api/taxii2/{API_ROOT}/collections/", "method": "GET"}
+
+read_user_expected_body_taxii2_collection_list = {
+    "collections": [
+        {
+            "id": "mitre_attack_mobile",
+            "title": "mitre_attack_mobile",
+            "description": "vertex+edge",
+            "can_read": True,
+            "can_write": False,
+            "media_types": [
+                "application/stix+json;version=2.1"
+            ]
+        },
+        {
+            "id": "mitre_attack_enterprise",
+            "title": "mitre_attack_enterprise",
+            "description": "vertex+edge",
+            "can_read": True,
+            "can_write": False,
+            "media_types": [
+                "application/stix+json;version=2.1"
+            ]
+        },
+        {
+            "id": "mitre_attack_ics",
+            "title": "mitre_attack_ics",
+            "description": "vertex+edge",
+            "can_read": True,
+            "can_write": False,
+            "media_types": [
+                "application/stix+json;version=2.1"
+            ]
+        }
+    ]
+}
+
+#====R/W USER====
+
+# {"endpoint": f"/api/taxii2/{API_ROOT}/collections/", "method": "GET"}
+
+read_write_user_expected_body_taxii2_collection_list = {
+    "collections": [
+        {
+            "id": "mitre_attack_mobile",
+            "title": "mitre_attack_mobile",
+            "description": "vertex+edge",
+            "can_read": True,
+            "can_write": True,
+            "media_types": [
+                "application/stix+json;version=2.1"
+            ]
+        },
+        {
+            "id": "mitre_attack_enterprise",
+            "title": "mitre_attack_enterprise",
+            "description": "vertex+edge",
+            "can_read": True,
+            "can_write": True,
+            "media_types": [
+                "application/stix+json;version=2.1"
+            ]
+        },
+        {
+            "id": "mitre_attack_ics",
+            "title": "mitre_attack_ics",
+            "description": "vertex+edge",
+            "can_read": True,
+            "can_write": True,
+            "media_types": [
+                "application/stix+json;version=2.1"
+            ]
+        }
+    ]
+}
+
+#====R USER====
+
+# {"endpoint": f"/api/taxii2/{API_ROOT}/collections/{{COLLECTION_ID}}/", "method": "GET"}
+
+read_user_expected_body_taxii2_collection = {
+    "id": "mitre_attack_enterprise",
+    "title": "mitre_attack_enterprise",
+    "description": None,
+    "can_read": True,
+    "can_write": False
+}
+
+#====R/W USER====
+
+# {"endpoint": f"/api/taxii2/arango_taxii_server_tests_database/collections/mitre_attack_enterprise/", "method": "GET"}
+
+read_write_user_expected_body_taxii2_collection = {
+    "id": "mitre_attack_enterprise",
+    "title": "mitre_attack_enterprise",
+    "description": None,
+    "can_read": True,
+    "can_write": True
+}
+
+#===EMPTY PAGES===
+
+empty_paged_response = {
+  "more": False,
+  "next": None,
+  "objects": []
+}
