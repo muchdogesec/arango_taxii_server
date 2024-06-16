@@ -16,10 +16,12 @@ Download and setup a stix2arango install outside of arango_taxii_server (do not 
 Once done can then run...
 
 ```shell
-python3 utilities/arango_taxii_server_import_test_data.py
+python3 utilities/arango_cti_processor/insert_archive_attack_enterprise.py --ignore_embedded_relationships false --versions 14_1,15_0,15_1 && \
+python3 utilities/arango_cti_processor/insert_archive_attack_ics.py --ignore_embedded_relationships false --versions 14_1,15_0,15_1 && \
+python3 utilities/arango_cti_processor/insert_archive_attack_mobile.py --ignore_embedded_relationships false --versions 14_1,15_0,15_1
 ```
 
-This will install the entire MITRE ATT&CK archive into ArangoDB into a database called `arango_taxii_server_tests` with each dataset in the following collections:
+This will install the MITRE ATT&CK versions listed into ArangoDB into a database called `arango_taxii_server_tests` with each dataset in the following collections:
 
 * `mitre_attack_enterprise_vertex_collection`/`mitre_attack_enterprise_edge_collection`
 * `mitre_attack_ics_vertex_collection`/`mitre_attack_ics_edge_collection`
