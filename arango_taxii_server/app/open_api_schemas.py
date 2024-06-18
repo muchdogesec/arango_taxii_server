@@ -37,7 +37,7 @@ StixType = {
     "pattern": "^([a-z][a-z0-9]*)+(-[a-z0-9]+)*\\-?$",
     "minLength": 3,
     "maxLength": 250,
-    "description": "The type property identifies the type of STIX Object (SDO, Relationship Object, etc). The value of the type field MUST be one of the types defined by a STIX Object (e.g., indicator).",
+    "description": "The type property identifies the type of STIX Object (SDO, Relationship Object, etc). The value of the type field MUST be one of the types defined by a STIX Object (e.g., `indicator`).",
     "example": "ipv6-addr"
 }
 
@@ -81,17 +81,16 @@ TaxiiMatchType = {
 
 
 added_after_query = OpenApiParameter("added_after", type=Datetime, description=dedent("""
-    A single timestamp that filters objects to only include those objects added after the specified timestamp. The value of this parameter is a timestamp.
+    A single timestamp that filters objects to only include those objects added after the specified timestamp. The value of this parameter is a timestamp. In the format `YYYY-MM-DDThh:mm:ss.sssZ`
     """))
 limit_query = OpenApiParameter(
     "limit",
     type=int,
     description=dedent(
         """
-    A single integer value that indicates the maximum number of objects that the client would like to receive in a single response.
+    A single integer value that indicates the maximum number of objects that the client would like to receive in a single response. The default returned is `50`. `50` is also the maximum number of results that can be returned in any response.
     """
     ),
-    default=10,
 )
 
 next_query = OpenApiParameter(
@@ -99,7 +98,7 @@ next_query = OpenApiParameter(
     type=OpenApiTypes.STR,
     description=dedent(
         """
-    A single string value that indicates the next record or set of records in the dataset that the client is requesting.
+    A single string value that indicates the next record or set of records in the dataset that the client is requesting. This value can be found in the `next` property of a previous response. 
     """
     ),
 )
@@ -109,7 +108,7 @@ match_id_query = OpenApiParameter(
     type=TaxiiMatchID,
     description=dedent(
         """
-    The identifier of the object(s) that are being requested. When searching for a STIX Object, this is a STIX ID.
+    The identifier of the object(s) that are being requested. This is the STIX `id` of the object, e.g. `indicator--00ee0481-1b16-4c0c-a0e6-43f51d172a81`
     """
     ),
     style="form",
@@ -121,7 +120,7 @@ match_type_query = OpenApiParameter(
     type=TaxiiMatchType,
     description=dedent(
         """
-    The type of the object(s) that are being requested. Only the types listed in this parameter are permitted in the response.
+    The type of the object(s) that are being requested. This is the STIX `type`, e.g. `attack-pattern`
     """
     ),
     style="form",
@@ -133,14 +132,13 @@ match_version_query = OpenApiParameter(
     type=TaxiiMatchVersion,
     description=dedent(
         """
-    The version of the object(s) that are being requested. If no version parameter is provided, the server MUST
-    return the latest version of the object.
+    The version of the object(s) that are being requested. If no version parameter is provided, the latest version of the object. Will be returned.
     Valid values for the version parameter are:
     - `last`: requests the latest version of an object. This is the default parameter value.
     - `first`: requests the earliest version of an object
     - `all`: requests all versions of an object
-    - `<modified>`: requests a specific version of an object. For example: "2016-01-01T01:01:01.000Z" tells the server to give you the exact STIX object with a
-    modified time of "2016-01-01T01:01:01.000Z".
+    - `<modified>`: requests a specific version of an object. For example: `2016-01-01T01:01:01.000Z` tells the server to give you the exact STIX object with a
+    `modified` time of `2016-01-01T01:01:01.000Z`.
     """
     ),
     style="form",
@@ -150,7 +148,7 @@ match_version_query = OpenApiParameter(
 match_spec_version_query = OpenApiParameter(
     "match[spec_version]",
     type=TaxiiMatchSpecVersion,
-    description="The specification version(s) of the STIX object that are being requested.",
+    description="The specification version(s) of the STIX object that are being requested. Arango TAXII Server only support STIX 2.1, so `2.1` is not only the default value but also the only value that can be passed.",
     style="form",
     explode=False,
 )
@@ -222,10 +220,10 @@ class CustomAutoSchema(AutoSchema):
         ),
     ]
     url_path_params = {
-        'collection_id': OpenApiParameter('collection_id', type=str, location=OpenApiParameter.PATH, description="The identifier of the Collection being requested."),
-        'api_root': OpenApiParameter('api_root', type=str, location=OpenApiParameter.PATH, description="The API Root name. Do not include the full URL."),
-        'object_id': OpenApiParameter('object_id', type=str, location=OpenApiParameter.PATH, description="The STIX ID of the object being requested."),
-        'status_id': OpenApiParameter('status_id', type=OpenApiTypes.UUID, location=OpenApiParameter.PATH, description="The ID of the object being requested"),
+        'collection_id': OpenApiParameter('collection_id', type=str, location=OpenApiParameter.PATH, description="The identifier of the Collection being requested. You can get a Collection ID from the GET Collections for an API Root endpoint."),
+        'api_root': OpenApiParameter('api_root', type=str, location=OpenApiParameter.PATH, description="The API Root name. Do not include the full URL. e.g. use `my_api_root` NOT `http://127.0.0.1:8000/api/taxii2/my_api_root/`"),
+        'object_id': OpenApiParameter('object_id', type=str, location=OpenApiParameter.PATH, description="The STIX ID of the object being requested. e.g. `indicator--00ee0481-1b16-4c0c-a0e6-43f51d172a81`. You can search for objects using the GET objects in a Collection endpoint."),
+        'status_id': OpenApiParameter('status_id', type=OpenApiTypes.UUID, location=OpenApiParameter.PATH, description="The status ID of the job being requested. The status ID is obtained in a successful response from the POST objects endpoint."),
     }
 
     def get_override_parameters(self):
