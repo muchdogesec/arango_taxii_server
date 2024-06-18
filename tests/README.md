@@ -19,7 +19,7 @@ Once done can then run...
 ```shell
 python3 utilities/arango_cti_processor/insert_archive_attack_enterprise.py --database arango_taxii_server_tests --versions 14_1,15_0,15_1 --ignore_embedded_relationships false && \
 python3 utilities/arango_cti_processor/insert_archive_attack_ics.py --database arango_taxii_server_tests --versions 14_1,15_0,15_1 --ignore_embedded_relationships false && \
-python3 utilities/arango_cti_processor/insert_archive_attack_mobile.py --database arango_taxii_server_tests --versions 14_1,15_0,15_1 --ignore_embedded_relationships false && \
+python3 utilities/arango_cti_processor/insert_archive_attack_mobile.py --database arango_taxii_server_tests --versions 14_1,15_0,15_1 --ignore_embedded_relationships false
 ```
 
 This will install the MITRE ATT&CK versions 14.1, 15.0, 15.1 into ArangoDB into a database called `arango_taxii_server_tests_database` with each dataset in the following collections:
@@ -36,15 +36,13 @@ To test permissions, setup 4 users in your local Arango instance by
 python3 tests/create_required_users.py
 ```
 
-Which adds 4 users with the following usernames (all with password `testing123`)
+Which adds 3 users with the following usernames (all with password `testing123`)
 
 * `read_write_user` (permissions, read/write to all `mitre_attack_*_vertex_collection`/`mitre_attack_*_edge_collection`)
 * `read_user` (permissions, read to all `mitre_attack_*_vertex_collection`/`mitre_attack_*_edge_collection`)
 * `no_access_user` (permissions, no access all `mitre_attack_*_vertex_collection`/`mitre_attack_*_edge_collection`)
-* `bad_permission_user` (permissions, read/write access to `mitre_attack_enterprise_vertex_collection` and no access to all other `mitre_attack_*_vertex_collection`/`mitre_attack_*_edge_collection`)
 
-
-You also need to have the default `root` user on your install with an empty password (the default). If you've changed this password, make sure to modify it in `base_test.py`.
+You also need to ensure the default `root` user on your install with an empty password (the default). If you've changed this password, make sure to modify it in `base_test.py`.
 
 **IMPORTANT**: You should check permissions are correctly assigned the UI before continuing. The script is not paticularly robust and I have had a number of reports of 500s being thrown on different ArangoDB installs.
 
@@ -71,3 +69,5 @@ SERVER_MAX_CONTENT_LENGTH=10485760
 SERVER_EMAIL='noreply@dogesec.com'
 SERVER_SUPPORT='https://community.dogesec.com/'
 ```
+
+### Running tests

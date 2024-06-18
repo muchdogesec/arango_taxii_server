@@ -98,7 +98,7 @@ next_query = OpenApiParameter(
     type=OpenApiTypes.STR,
     description=dedent(
         """
-    A single string value that indicates the next record or set of records in the dataset that the client is requesting. This value can be found in the `next` property of a previous response. 
+    A single string value that indicates the next record or set of records in the dataset that the client is requesting. This value can be found in the `next` property of the current response (current page).
     """
     ),
 )
