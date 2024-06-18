@@ -6,7 +6,8 @@ BASE_URL = "http://127.0.0.1:8000"
 USERS = {
     "read_write_user": "testing123", # this user has read/write permissions to collections in database arango_taxii_server_tests_database
     "read_user": "testing123", # this user has read permissions to collections in database arango_taxii_server_tests_database
-    "no_access_user": "testing123", # this user has to permissions
+    "no_access_user": "testing123", # this is a valid Arango account, but user has no permissions
+    "bad_credentials_user": "blah", # this is not a valid Arango account
     "root": "" # this user has read/write permissions to all databases / collections
 }
 

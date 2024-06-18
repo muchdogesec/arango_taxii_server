@@ -19,11 +19,12 @@ class TestAPITaxiiServer(unittest.TestCase):
         print(f"Response Body: {response.text}")
         self.test_counter += 1
 
-    def test_get_schema(self):
-        url = URL_SCHEMA
-        response = requests.get(url, headers=self.headers)
-        self.log_response(url, self.headers, response)
-        self.assertEqual(response.status_code, 200, f"Expected 200, got {response.status_code}")
+# should always be public
+#    def test_get_schema(self):
+#        url = URL_SCHEMA
+#        response = requests.get(url, headers=self.headers)
+#        self.log_response(url, self.headers, response)
+#        self.assertEqual(response.status_code, 200, f"Expected 200, got {response.status_code}")
 
     def test_get_discover(self):
         url = URL_DISCOVER
