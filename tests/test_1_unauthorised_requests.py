@@ -6,8 +6,10 @@ class TestAPITaxiiServer(unittest.TestCase):
 
     def setUp(self):
         self.headers = HEADERS
+        self.test_counter = 1
 
     def log_response(self, url, headers, response, auth=None):
+        print(f"Test Number: {self.test_counter}")
         print(f"Request URL: {url}")
         print(f"Request Headers: {headers}")
         if auth:
@@ -15,6 +17,7 @@ class TestAPITaxiiServer(unittest.TestCase):
         print(f"Response HTTP Code: {response.status_code}")
         print(f"Response Headers: {response.headers}")
         print(f"Response Body: {response.text}")
+        self.test_counter += 1
 
     def test_get_schema(self):
         url = URL_SCHEMA
