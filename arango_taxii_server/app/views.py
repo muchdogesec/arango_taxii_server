@@ -22,7 +22,7 @@ import textwrap
 
 
 class TaxiiJSONRenderer(renderers.JSONRenderer):
-    media_type = conf.taxii_type.split(";")[0]
+    media_type = conf.taxii_type
     format = 'taxii2-json'
 
 

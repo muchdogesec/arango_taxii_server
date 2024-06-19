@@ -1,10 +1,12 @@
 from enum import Enum
 from textwrap import dedent
+from typing import Any, List
 
 from drf_spectacular.extensions import OpenApiAuthenticationExtension
-from drf_spectacular.openapi import AutoSchema
+from drf_spectacular.openapi import AutoSchema, whitelisted
 from drf_spectacular.utils import OpenApiParameter
 from drf_spectacular.types import OpenApiTypes
+from rest_framework import renderers
 
 from .. import conf
 from .authentication import ArangoServerAuthentication
@@ -238,6 +240,23 @@ class CustomAutoSchema(AutoSchema):
 
     def _is_list_view(self, *args, **kwargs):
         return False
+    
+    def map_renderers(self, attribute: str) -> list[Any]:
+        assert attribute in ['media_type', 'format']
+
+        # Either use whitelist or default back to old behavior by excluding BrowsableAPIRenderer
+        def use_renderer(r):
+            if spectacular_settings.RENDERER_WHITELIST is not None:
+                return whitelisted(r, spectacular_settings.RENDERER_WHITELIST)
+            else:
+                return not isinstance(r, renderers.BrowsableAPIRenderer)
+        keys = []
+        for r in self.view.get_renderers():
+            if use_renderer(r) and hasattr(r, attribute):
+                media_type = getattr(r, attribute)
+                keys.append(media_type)
+        
+        return keys
                 
 
 class ArangoServerAuthenticationScheme(OpenApiAuthenticationExtension):
