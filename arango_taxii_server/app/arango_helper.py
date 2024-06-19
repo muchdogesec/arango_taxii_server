@@ -237,11 +237,11 @@ class ArangoSession:
         ###
         if req_type=="manifest":
             AQL += """
-            RETURN { "id": doc.id, "date_added": doc.created, "version": doc.modified != NULL ? doc.modified : doc.created }
+            RETURN { "id": doc.id, "date_added": doc.created, "version": doc.modified or doc.created }
             """
         elif req_type=="objects":
             AQL += """
-            RETURN UNSET(doc, '_key', '_bundle_id', '_file_name', '_id', '_is_latest', '_record_created', '_record_md5_hash', '_record_modified', '_rev', '_stix2arango_note', '_from', '_is_ref', '_to')
+            RETURN KEEP(doc, ATTRIBUTES(doc, true))
             """
         elif req_type == "versions":
             AQL += """

@@ -10,7 +10,7 @@ from rest_framework import decorators, generics, permissions, views, viewsets, r
 from rest_framework.request import Request
 # from rest_framework.response import Response
 from datetime import datetime as dt
-from rest_framework import renderers
+from rest_framework import renderers, parsers
 
 from . import task_helpers
 from .. import conf
@@ -21,8 +21,11 @@ from django.shortcuts import get_object_or_404
 import textwrap
 
 
+class TaxiiJSONParser(parsers.JSONParser):
+    media_type = conf.taxii_type
+
 class TaxiiJSONRenderer(renderers.JSONRenderer):
-    media_type = conf.taxii_type.split(";")[0]
+    media_type = conf.taxii_type
     format = 'taxii2-json'
 
 
@@ -155,6 +158,7 @@ class CollectionView(ArangoView, viewsets.ViewSet):
 class ObjectView(ArangoView, viewsets.ViewSet):
     serializer_class = serializers.ObjectSerializer
     lookup_url_kwarg = "object_id"
+    parser_classes = [TaxiiJSONParser]
 
     @extend_schema(tags=open_api_schemas.OpenApiTags.COLLECTIONS.tags, responses={200:serializers.TaxiiStatusSerializer, **serializers.TaxiiErrorSerializer.error_responses(400, 401, 403, 404, 406, 413, 415, 422)}, request=serializers.ObjectSerializer, summary="Add a new object to a specific collection", description=textwrap.dedent("""
         This Endpoint adds objects to a Collection. Successful responses to this Endpoint will contain a status resource describing the status of the request. The status resource contains an id, which can be used to make requests to the get status Endpoint, a status flag to indicate whether the request is completed or still being processed, and information about the status of the particular objects in the request.
