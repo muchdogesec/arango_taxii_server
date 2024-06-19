@@ -1,6 +1,6 @@
 import unittest
 import requests
-from .test_variables import *
+from tests.test_variables import *
 import base64
 
 class TestNoAccessUser(unittest.TestCase):

@@ -37,7 +37,7 @@ LIST_OF_COLLECTION_IDS = [
 VALID_MITRE_ATTACK_ENTERPRISE_COLLECTION_OBJECT_IDS = [
     { 
         "id": "attack-pattern--2bce5b30-7014-4a5d-ade7-12913fe6ac36",
-        "versions": ["2020-03-29T21:23:51.886Z"]
+        "versions": ["2021-04-29T14:49:39.188Z"]
     },
     { 
         "id": "attack-pattern--67720091-eee3-4d2d-ae16-8264567f6f5b",
