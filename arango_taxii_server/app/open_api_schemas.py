@@ -83,7 +83,7 @@ TaxiiMatchType = {
 
 
 added_after_query = OpenApiParameter("added_after", type=Datetime, description=dedent("""
-    A single timestamp that filters objects to only include those objects added after the specified timestamp. The value of this parameter is a timestamp. In the format `YYYY-MM-DDThh:mm:ss.sssZ`
+    A single timestamp that filters objects to only include those objects added after the specified timestamp. This filter considers the `modified` time in an object if exists, else it considers the stix2arango `_record_modified` time. The value of this parameter is a timestamp. In the format `YYYY-MM-DDThh:mm:ss.sssZ`
     """))
 limit_query = OpenApiParameter(
     "limit",
@@ -100,7 +100,7 @@ next_query = OpenApiParameter(
     type=OpenApiTypes.STR,
     description=dedent(
         """
-    A single string value that indicates the next record or set of records in the dataset that the client is requesting. This value can be found in the `next` property of the current response (current page).
+    A single string value that indicates the next record or set of records in the dataset that the client is requesting. This value can be found in the `next` property of the current response (current page). e.g. `47081020_undef+0.03084373803615459`
     """
     ),
 )
@@ -134,13 +134,17 @@ match_version_query = OpenApiParameter(
     type=TaxiiMatchVersion,
     description=dedent(
         """
-    The version of the object(s) that are being requested. If no version parameter is provided, the latest version of the object. Will be returned.
+    The version of the object(s) that are being requested. If no version parameter is provided, the latest version of the object will be returned.
+
     Valid values for the version parameter are:
+
     - `last`: requests the latest version of an object. This is the default parameter value.
     - `first`: requests the earliest version of an object
     - `all`: requests all versions of an object
-    - `<modified>`: requests a specific version of an object. For example: `2016-01-01T01:01:01.000Z` tells the server to give you the exact STIX object with a
-    `modified` time of `2016-01-01T01:01:01.000Z`.
+    - `<modified>`: requests a specific version of an object. For example: `2016-01-01T00:00:00.000Z` tells the server to give you the exact STIX object with a
+    `modified` time of `2016-01-01T00:00:00.000Z`.
+
+    Note, for objects with a `modified` time, this value will be considered as the version. For objects without a `modified` time, the stix2arango `_record_modified` value will be used to determine version.
     """
     ),
     style="form",

@@ -141,8 +141,8 @@ class TestReadUser(unittest.TestCase):
             for collection_id in LIST_OF_COLLECTION_IDS:
                 self.test_number += 1
                 url = URL_COLLECTION_MANIFEST.replace("{API_ROOT}", api_root).replace("{COLLECTION_ID}", collection_id)
-                response = requests.get(url, headers=self.headers)
-                self.log_response(self.test_number, url, self.headers, response, auth="read_user")
+                response = requests.get(url, headers=REQUEST_HEADERS_MANIFEST)  # Updated to use REQUEST_HEADERS_MANIFEST
+                self.log_response(self.test_number, url, REQUEST_HEADERS_MANIFEST, response, auth="read_user")
                 self.check_response_headers(response)
                 expected_body = response.json()
                 self.assertTrue(expected_body.get('more'), "Expected 'more' to be true")

@@ -16,6 +16,10 @@ REQUEST_HEADERS = {
     "Accept": "application/taxii+json;version=2.1"
 }
 
+REQUEST_HEADERS_MANIFEST = {
+    "Accept: application/taxii+json;version=2.1,application/stix+json;version=2.1"
+}
+
 RESPONSE_HEADERS = {
     "Content-Type": "application/taxii+json;version=2.1"
 }
@@ -105,3 +109,5 @@ URL_COLLECTION_OBJECTS = f"{BASE_URL}/api/taxii2/{{API_ROOT}}/collections/{{COLL
 URL_OBJECT = f"{BASE_URL}/api/taxii2/{{API_ROOT}}/collections/{{COLLECTION_ID}}/objects/{{OBJECT_ID}}/"
 URL_OBJECT_VERSIONS = f"{BASE_URL}/api/taxii2/{{API_ROOT}}/collections/{{COLLECTION_ID}}/objects/{{OBJECT_ID}}/versions/"
 URL_STATUS = f"{BASE_URL}/api/taxii2/{{API_ROOT}}/status/{{STATUS_ID}}/"
+
+# Parameter tests

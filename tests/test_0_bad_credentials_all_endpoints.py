@@ -1,11 +1,15 @@
 import unittest
 import requests
 from tests.test_variables import *
+import base64
 
-class TestAPITaxiiServer(unittest.TestCase):
+class BadCredentialsUser(unittest.TestCase):
 
     def setUp(self):
-        self.headers = REQUEST_HEADERS
+        self.headers = REQUEST_HEADERS.copy()
+        user_pass = f"bad_credentials_user:{USERS['bad_credentials_user']}"
+        encoded_credentials = base64.b64encode(user_pass.encode()).decode('utf-8')
+        self.headers['Authorization'] = f"Basic {encoded_credentials}"
         self.test_counter = 1
 
     def log_response(self, url, headers, response, auth=None):
@@ -33,7 +37,7 @@ class TestAPITaxiiServer(unittest.TestCase):
     def test_get_discover(self):
         url = URL_DISCOVER
         response = requests.get(url, headers=self.headers)
-        self.log_response(url, self.headers, response)
+        self.log_response(url, self.headers, response, auth="bad_credentials_user")
         self.check_response_headers(response)
         self.assertEqual(response.status_code, 401, f"Expected 401, got {response.status_code}")
 
@@ -41,7 +45,7 @@ class TestAPITaxiiServer(unittest.TestCase):
         for api_root in API_ROOT:
             url = URL_API_ROOT.replace("{API_ROOT}", api_root)
             response = requests.get(url, headers=self.headers)
-            self.log_response(url, self.headers, response)
+            self.log_response(url, self.headers, response, auth="bad_credentials_user")
             self.check_response_headers(response)
             self.assertEqual(response.status_code, 401, f"Expected 401, got {response.status_code}")
 
@@ -49,7 +53,7 @@ class TestAPITaxiiServer(unittest.TestCase):
         for api_root in API_ROOT:
             url = URL_COLLECTIONS_LIST.replace("{API_ROOT}", api_root)
             response = requests.get(url, headers=self.headers)
-            self.log_response(url, self.headers, response)
+            self.log_response(url, self.headers, response, auth="bad_credentials_user")
             self.check_response_headers(response)
             self.assertEqual(response.status_code, 401, f"Expected 401, got {response.status_code}")
 
@@ -58,7 +62,7 @@ class TestAPITaxiiServer(unittest.TestCase):
             for collection_id in LIST_OF_COLLECTION_IDS:
                 url = URL_COLLECTION.replace("{API_ROOT}", api_root).replace("{COLLECTION_ID}", collection_id)
                 response = requests.get(url, headers=self.headers)
-                self.log_response(url, self.headers, response)
+                self.log_response(url, self.headers, response, auth="bad_credentials_user")
                 self.check_response_headers(response)
                 self.assertEqual(response.status_code, 401, f"Expected 401, got {response.status_code}")
 
@@ -66,8 +70,8 @@ class TestAPITaxiiServer(unittest.TestCase):
         for api_root in API_ROOT:
             for collection_id in LIST_OF_COLLECTION_IDS:
                 url = URL_COLLECTION_MANIFEST.replace("{API_ROOT}", api_root).replace("{COLLECTION_ID}", collection_id)
-                response = requests.get(url, headers=self.headers)
-                self.log_response(url, self.headers, response)
+                response = requests.get(url, headers=REQUEST_HEADERS_MANIFEST)
+                self.log_response(url, REQUEST_HEADERS_MANIFEST, response, auth="bad_credentials_user")
                 self.check_response_headers(response)
                 self.assertEqual(response.status_code, 401, f"Expected 401, got {response.status_code}")
 
@@ -76,7 +80,7 @@ class TestAPITaxiiServer(unittest.TestCase):
             for collection_id in LIST_OF_COLLECTION_IDS:
                 url = URL_COLLECTION_OBJECTS.replace("{API_ROOT}", api_root).replace("{COLLECTION_ID}", collection_id)
                 response = requests.get(url, headers=self.headers)
-                self.log_response(url, self.headers, response)
+                self.log_response(url, self.headers, response, auth="bad_credentials_user")
                 self.check_response_headers(response)
                 self.assertEqual(response.status_code, 401, f"Expected 401, got {response.status_code}")
 
@@ -88,13 +92,13 @@ class TestAPITaxiiServer(unittest.TestCase):
                     "objects": [DUMMY_OBJECT]
                 }
                 response = requests.post(url, headers=self.headers, json=data)
-                self.log_response(url, self.headers, response)
+                self.log_response(url, self.headers, response, auth="bad_credentials_user")
                 self.check_response_headers(response)
                 self.assertEqual(response.status_code, 401, f"Expected 401, got {response.status_code}")
                 # Verify that the object was not added
                 verification_url = URL_OBJECT.replace("{API_ROOT}", api_root).replace("{COLLECTION_ID}", collection_id).replace("{OBJECT_ID}", DUMMY_OBJECT_ID)
-                verification_response = requests.get(verification_url, headers=self.root_headers)
-                self.log_response(verification_url, self.root_headers, verification_response, auth="root")
+                verification_response = requests.get(verification_url, headers=self.headers)
+                self.log_response(verification_url, self.headers, verification_response, auth="root")
                 expected_verification_body = {
                     "more": False,
                     "next": None,
@@ -108,7 +112,7 @@ class TestAPITaxiiServer(unittest.TestCase):
             for collection_id in LIST_OF_COLLECTION_IDS:
                 url = URL_OBJECT.replace("{API_ROOT}", api_root).replace("{COLLECTION_ID}", collection_id).replace("{OBJECT_ID}", DUMMY_OBJECT_ID)
                 response = requests.get(url, headers=self.headers)
-                self.log_response(url, self.headers, response)
+                self.log_response(url, self.headers, response, auth="bad_credentials_user")
                 self.check_response_headers(response)
                 self.assertEqual(response.status_code, 401, f"Expected 401, got {response.status_code}")
 
@@ -117,7 +121,7 @@ class TestAPITaxiiServer(unittest.TestCase):
             for collection_id in LIST_OF_COLLECTION_IDS:
                 url = URL_OBJECT.replace("{API_ROOT}", api_root).replace("{COLLECTION_ID}", collection_id).replace("{OBJECT_ID}", DUMMY_OBJECT_ID)
                 response = requests.delete(url, headers=self.headers)
-                self.log_response(url, self.headers, response)
+                self.log_response(url, self.headers, response, auth="bad_credentials_user")
                 self.check_response_headers(response)
                 self.assertEqual(response.status_code, 401, f"Expected 401, got {response.status_code}")
 
@@ -126,7 +130,7 @@ class TestAPITaxiiServer(unittest.TestCase):
             for collection_id in LIST_OF_COLLECTION_IDS:
                 url = URL_OBJECT_VERSIONS.replace("{API_ROOT}", api_root).replace("{COLLECTION_ID}", collection_id).replace("{OBJECT_ID}", DUMMY_OBJECT_ID)
                 response = requests.get(url, headers=self.headers)
-                self.log_response(url, self.headers, response)
+                self.log_response(url, self.headers, response, auth="bad_credentials_user")
                 self.check_response_headers(response)
                 self.assertEqual(response.status_code, 401, f"Expected 401, got {response.status_code}")
 
@@ -134,7 +138,7 @@ class TestAPITaxiiServer(unittest.TestCase):
         for api_root in API_ROOT:
             url = URL_STATUS.replace("{API_ROOT}", api_root).replace("{STATUS_ID}", DUMMY_STATUS_ID)
             response = requests.get(url, headers=self.headers)
-            self.log_response(url, self.headers, response)
+            self.log_response(url, self.headers, response, auth="bad_credentials_user")
             self.check_response_headers(response)
             self.assertEqual(response.status_code, 401, f"Expected 401, got {response.status_code}")
 

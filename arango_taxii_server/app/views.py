@@ -202,7 +202,7 @@ class ObjectView(ArangoView, viewsets.ViewSet):
         return self.list(request, api_root, collection_id, more_queries={"match[id]": object_id})
 
     @extend_schema(parameters=open_api_schemas.VersionsQueryParams, responses={200: serializers.VersionsSerializer, **serializers.TaxiiErrorSerializer.error_responses()}, tags=open_api_schemas.OpenApiTags.COLLECTIONS.tags, summary="Get a list of object versions from a collection", description=textwrap.dedent("""
-        This Endpoint retrieves a list of one or more versions of an object in a Collection. This list can be used to decide whether it's worth retrieving the actual objects, or if new versions have been added. If a STIX object is not versioned (and therefore does not have a `modified` timestamp), the server uses `_record_modified` timestamp.
+        This Endpoint retrieves a list of one or more versions of an object in a Collection. This list can be used to decide whether it's worth retrieving the actual objects, or if new versions have been added. If a STIX object is not versioned (and therefore does not have a `modified` timestamp), the server uses the stix2atango `_record_modified` timestamp.
         """))
     @decorators.action(methods=['GET'], detail=True)
     def versions(self, request:Request, api_root="", collection_id="", object_id=""):
