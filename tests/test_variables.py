@@ -85,17 +85,30 @@ DUMMY_OBJECT = {
     "created_by_ref": "identity--562918ee-d5da-5579-b6a1-fae50cc6bad3",
     "created": "2000-01-01T00:00:00.000Z",
     "modified": "2000-01-01T00:00:00.000Z",
-    "name": "DUMMY OBJECT 1"
+    "name": "DUMMY OBJECT 1",
+    "description": "Added first"
 }
-DUMMY_OBJECT_2_ID = "dummy--5edfebc9-331c-4264-a5bb-411a72089d41"
+DUMMY_OBJECT_3_ID = "dummy--b41e15b1-1595-4e4a-bb03-e6f48f7edafb"
 DUMMY_OBJECT_2 = {
     "type": "indicator",
     "spec_version": "2.1",
     "id": "dummy--b41e15b1-1595-4e4a-bb03-e6f48f7edafb",
     "created_by_ref": "identity--5edfebc9-331c-4264-a5bb-411a72089d41",
     "created": "2000-01-01T00:00:00.000Z",
-    "modified": "2000-01-01T00:00:00.000Z",
-    "name": "DUMMY OBJECT 2"
+    "modified": "2001-01-01T00:00:00.000Z",
+    "name": "DUMMY OBJECT 2",
+    "description": "Added second"
+}
+DUMMY_OBJECT_3_ID = "dummy--b41e15b1-1595-4e4a-bb03-e6f48f7edafb"
+DUMMY_OBJECT_3 = {
+    "type": "indicator",
+    "spec_version": "2.1",
+    "id": "dummy--b41e15b1-1595-4e4a-bb03-e6f48f7edafb",
+    "created_by_ref": "identity--5edfebc9-331c-4264-a5bb-411a72089d41",
+    "created": "2000-01-01T00:00:00.000Z",
+    "modified": "2002-01-01T00:00:00.000Z",
+    "name": "DUMMY OBJECT 3",
+    "description": "Added third"
 }
 
 # URL endpoints
