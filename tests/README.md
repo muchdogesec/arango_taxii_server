@@ -32,7 +32,7 @@ This will install the MITRE ATT&CK versions 14.1, 15.0, 15.1 into ArangoDB into 
 
 #### Dummy data
 
-You should also manually create two collections
+You should also manually create two collections in the `arango_taxii_server_tests_database`;
 
 * `dummy_post_vertex_collection`: type = document
 * `dummy_post_edge_collection`: type = edge
