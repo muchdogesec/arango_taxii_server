@@ -88,7 +88,6 @@ DUMMY_OBJECT = {
     "name": "DUMMY OBJECT 1",
     "description": "Added first"
 }
-DUMMY_OBJECT_3_ID = "dummy--b41e15b1-1595-4e4a-bb03-e6f48f7edafb"
 DUMMY_OBJECT_2 = {
     "type": "indicator",
     "spec_version": "2.1",
@@ -99,7 +98,6 @@ DUMMY_OBJECT_2 = {
     "name": "DUMMY OBJECT 2",
     "description": "Added second"
 }
-DUMMY_OBJECT_3_ID = "dummy--b41e15b1-1595-4e4a-bb03-e6f48f7edafb"
 DUMMY_OBJECT_3 = {
     "type": "indicator",
     "spec_version": "2.1",

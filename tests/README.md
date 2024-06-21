@@ -11,6 +11,8 @@ pip3 install -r requirements.txt
 
 ### Import required data
 
+#### ATT&CK data
+
 Download and setup a stix2arango install outside of arango_taxii_server (do not use the one that ships with this codebase).
 
 Once done can then run...
@@ -28,23 +30,22 @@ This will install the MITRE ATT&CK versions 14.1, 15.0, 15.1 into ArangoDB into 
 * `mitre_attack_ics_vertex_collection`/`mitre_attack_ics_edge_collection`
 * `mitre_attack_mobile_vertex_collection`/`mitre_attack_mobile_edge_collection`
 
+#### Dummy data
+
+You should also manually create two collections
+
+* `dummy_post_vertex_collection`: type = document
+* `dummy_post_edge_collection`: type = edge
+
 ### Configure Arango users for testing
 
-To test permissions, setup 4 users in your local Arango instance by 
+To test permissions, setup 3 users in your local Arango instance (all with password `testing123`);
 
-```shell
-python3 tests/create_required_users.py
-```
-
-Which adds 3 users with the following usernames (all with password `testing123`)
-
-* `read_write_user` (permissions, read/write to all `mitre_attack_*_vertex_collection`/`mitre_attack_*_edge_collection`)
+* `read_write_user` (permissions, read/write to all `mitre_attack_*_vertex_collection`/`mitre_attack_*_edge_collection` and `dummy_post_vertex_collection`/`dummy_post_edge_collection`)
 * `read_user` (permissions, read to all `mitre_attack_*_vertex_collection`/`mitre_attack_*_edge_collection`)
 * `no_access_user` (permissions, no access all `mitre_attack_*_vertex_collection`/`mitre_attack_*_edge_collection`)
 
 You also need to ensure the default `root` user on your install with an empty password (the default). If you've changed this password, make sure to modify it in `base_test.py`.
-
-**IMPORTANT**: You should check permissions are correctly assigned the UI before continuing. The script is not paticularly robust and I have had a number of reports of 500s being thrown on different ArangoDB installs.
 
 To make it a bit clearer, here's an example of what `read_write_user` permissions should look like:
 
