@@ -217,18 +217,18 @@ class ArangoSession:
             """
             binding["added_after"] = added_after
 
-        if stix_type := query_params.get("match[type]"):
+        if stix_type := query_params.get("match[type]", ""):
             AQL += """
-            FILTER doc.type == @type
+            FILTER CONTAINS(@match_type, doc.type)
             """
-            binding['type'] = stix_type
+            binding['match_type'] = stix_type.split(",")
 
         
-        if doc_id := query_params.get("match[id]"):
+        if match_id := query_params.get("match[id]"):
             AQL += """
-            FILTER CONTAINS(SPLIT(@doc_id, ','), doc.id)
+            FILTER CONTAINS(@match_id, doc.id)
             """
-            binding['doc_id'] = doc_id
+            binding['match_id'] = match_id.split(',')
         
         AQL += """
         FILTER doc.id != NULL
