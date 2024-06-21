@@ -17,11 +17,11 @@ REQUEST_HEADERS = {
 }
 
 REQUEST_HEADERS_MANIFEST = {
-    "Accept: application/taxii+json;version=2.1,application/stix+json;version=2.1"
+    "Accept": "application/taxii+json;version=2.1,application/stix+json;version=2.1"
 }
 
 REQUEST_SCHEMA_HEADERS = {
-    "accept: application/vnd.oai.openapi"
+    "accept": "application/vnd.oai.openapi"
 }
 
 RESPONSE_HEADERS = {
