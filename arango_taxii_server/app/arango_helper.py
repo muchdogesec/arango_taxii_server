@@ -1,3 +1,4 @@
+import json
 import os
 import random
 import re
@@ -179,6 +180,7 @@ class ArangoSession:
             LET documents = {aql_documents_str}
             FOR doc IN documents
                 FILTER NOT STARTS_WITH(doc.id, "_")
+
         """
         retval = {"bindVars":binding}
         if versions := set(query_params.get("match[version]", 'last').split(",")):
@@ -231,21 +233,32 @@ class ArangoSession:
             binding['match_id'] = match_id.split(',')
         
         AQL += """
-        FILTER doc.id != NULL
-        SORT doc.created, doc.modified ASC
+        /* START ---- make sure only one id, modified time pair ----- */
+        COLLECT d_id = doc.id, d_version = doc.version INTO grouped
+        LET document = FIRST(
+            FOR d in grouped[*].doc
+            SORT d._record_modified
+            LIMIT 1
+            RETURN d
+        )
+        /* END ---- make sure only one id, modified time pair ----- */
+
+        FILTER document.id != NULL
+        SORT document.modified, document.created ASC
+
         """
         ###
         if req_type=="manifest":
             AQL += """
-            RETURN { "id": doc.id, "date_added": doc.created, "version": doc.modified or doc.created }
+            RETURN { "id": document.id, "date_added": document.created, "version": document.modified or document.created }
             """
         elif req_type=="objects":
             AQL += """
-            RETURN KEEP(doc, ATTRIBUTES(doc, true))
+            RETURN KEEP(document, ATTRIBUTES(document, true))
             """
         elif req_type == "versions":
             AQL += """
-            RETURN doc.modified
+            RETURN document.modified
             """
         else:
             pass
