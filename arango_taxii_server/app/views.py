@@ -171,7 +171,7 @@ class ObjectView(ArangoView, viewsets.ViewSet):
             ):
                 return ErrorResp(413, f"Request Entity Too Large. Request's Content-Length must not be higher than api_root.max_content_length.")
 
-        print(request.body)
+        # print(request.body)
         serializer = self.serializer_class(data=request.data)
         serializer.is_valid()
         status_id = uuid.uuid4()
@@ -212,10 +212,10 @@ class ObjectView(ArangoView, viewsets.ViewSet):
         s.is_valid()
         return Response(s.data, headers=get_added_date_headers(objects.result, first_key=None, last_key=None))
 
-    @extend_schema(tags=open_api_schemas.OpenApiTags.COLLECTIONS.tags, summary="Delete a specific object from a collection", responses={200:{}, **serializers.TaxiiErrorSerializer.error_responses()}, description=textwrap.dedent("""
+    @extend_schema(parameters=open_api_schemas.ObjectDeleteParams, tags=open_api_schemas.OpenApiTags.COLLECTIONS.tags, summary="Delete a specific object from a collection", responses={(200, TaxiiJSONRenderer.media_type):open_api_schemas.OpenApiTypes.NONE, **serializers.TaxiiErrorSerializer.error_responses()}, description=textwrap.dedent("""
         This Endpoint deletes an object from a Collection by its id. The `{object-id}` MUST be the STIX id. To support removing a particular version of an object, this Endpoint supports filtering. The only valid match parameter is `version`. If no filters are applied, all versions of the object will be deleted.
         """))
     def destroy(self, request:Request, api_root="", collection_id="", object_id=""):
         db: arango_helper.ArangoSession =  request.user.arango_session
-        db.remove_object(api_root, collection_id, object_id)
+        db.remove_object(api_root, collection_id, object_id, match_version=request.query_params.get('match[version]'))
         return Response()

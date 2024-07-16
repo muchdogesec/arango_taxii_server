@@ -1,10 +1,10 @@
 from enum import Enum
 from textwrap import dedent
-from typing import Any, List
+from typing import Any, Dict, List, Literal
 
 from drf_spectacular.extensions import OpenApiAuthenticationExtension
 from drf_spectacular.openapi import AutoSchema, whitelisted
-from drf_spectacular.utils import OpenApiParameter
+from drf_spectacular.utils import _SchemaType, OpenApiParameter
 from drf_spectacular.types import OpenApiTypes
 from rest_framework import renderers
 
@@ -181,6 +181,11 @@ SingleObjectQueryParams = [
     match_version_query,
 ]
 
+ObjectDeleteParams = [
+    match_version_query,
+    match_spec_version_query
+]
+
 
 class OpenApiTags(Enum):
     API_ROOT = {
@@ -217,13 +222,6 @@ spectacular_settings.apply_patches({'TAGS': OpenApiTags.all()})
 
 class CustomAutoSchema(AutoSchema):
     global_params = [
-        OpenApiParameter(
-            name="Content-Type",
-            location=OpenApiParameter.HEADER,
-            response=True,
-            required=True,
-            default=conf.taxii_type
-        ),
     ]
     url_path_params = {
         'collection_id': OpenApiParameter('collection_id', type=str, location=OpenApiParameter.PATH, description="The identifier of the Collection being requested. You can get a Collection ID from the GET Collections for an API Root endpoint."),

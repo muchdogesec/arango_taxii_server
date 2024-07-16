@@ -138,28 +138,59 @@ class ArangoSession:
             resp.dict['next'] = f"{resp.dict['id']}_{resp.dict.get('nextBatchId', f'undef+{random.random()}')}"
         return resp
 
-    def remove_object(self, db_name, collection, object_id):
+    def remove_object(self, db_name, collection, object_id, match_version=None):
         vertex, edge = f"{collection}_vertex_collection", f"{collection}_edge_collection"
+
         AQL = """
-        LET a = (
+        LET vertices = (
             FOR doc in @@vertex_collection
                 FILTER doc.id == @object_id
-                REMOVE {_key: doc._key} in @@vertex_collection
+                RETURN {type: "vertex", _key: doc._key, modified: doc.modified}
+        )
+        LET edges = (
+            FOR doc in @@edge_collection
+                FILTER doc.id == @object_id
+                RETURN {type: "edge", _key: doc._key, modified: doc.modified}
+        )
+
+        FOR doc in APPEND(vertices, edges)
+        RETURN doc
+        """
+        url = urljoin(self.HOST_URL, f"/_db/{db_name}/_api/cursor/")
+        resp = self.parse_response(self.session.post(url, json=dict(query=AQL, bindVars={"object_id":object_id, "@vertex_collection": vertex, "@edge_collection": edge})))
+        
+        versions = (match_version or "all").split(",")
+        objects_to_remove = []
+        results = sorted(resp.result, key=lambda result: result["modified"])
+
+        for i, result in enumerate(results):
+            if result['modified'] in versions or "all" in versions:
+                objects_to_remove.append(result)
+            elif "first" in versions and result['modified'] == results[0]['modified']:
+                objects_to_remove.append(result)
+            elif "last" in versions  and result['modified'] == results[-1]['modified']:
+                objects_to_remove.append(result)
+
+        DELETE_AQL = """
+        LET a = (
+            FOR doc in @object_ids
+                FILTER doc.type == "vertex"
+                REMOVE doc in @@vertex_collection
                 RETURN NULL
         )
 
         LET b = (
-            FOR doc in @@edge_collection
-                FILTER doc.id == @object_id
+            FOR doc in @object_ids
+                FILTER doc.type == "edge"
                 REMOVE {_key: doc._key} in @@edge_collection
                 RETURN NULL
         )
 
-        RETURN APPEND(a, b)
+        RETURN NULL
         """
-
+        
         url = urljoin(self.HOST_URL, f"/_db/{db_name}/_api/cursor/")
-        resp = self.parse_response(self.session.post(url, json=dict(query=AQL, bindVars={"object_id":object_id, "@vertex_collection": vertex, "@edge_collection": edge})))
+        resp = self.parse_response(self.session.post(url, json=dict(query=DELETE_AQL, bindVars={"object_ids":objects_to_remove, "@vertex_collection": vertex, "@edge_collection": edge})))
         return resp
 
 
@@ -234,7 +265,7 @@ class ArangoSession:
         
         AQL += """
         /* START ---- make sure only one id, modified time pair ----- */
-        COLLECT d_id = doc.id, d_version = doc.version INTO grouped
+        COLLECT d_id = doc.id, d_version = doc.modified INTO grouped
         LET document = FIRST(
             FOR d in grouped[*].doc
             SORT d._record_modified
@@ -263,6 +294,7 @@ class ArangoSession:
         else:
             pass
         retval["query"] = AQL
+        print("QUERY is:", AQL)
         return retval
 
     @classmethod
