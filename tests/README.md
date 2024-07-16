@@ -72,3 +72,7 @@ SERVER_SUPPORT='https://community.dogesec.com/'
 ```
 
 ### Running tests
+
+```shell
+python3 -m unittest tests/TEST.py
+```
