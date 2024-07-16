@@ -166,12 +166,14 @@ ObjectsQueryParams = [
     match_id_query,
     match_type_query,
     match_version_query,
+    match_spec_version_query,
 ]
 
 VersionsQueryParams = [
     added_after_query,
     limit_query,
     next_query,
+    match_spec_version_query,
 ]
 
 SingleObjectQueryParams = [
@@ -179,11 +181,12 @@ SingleObjectQueryParams = [
     limit_query,
     next_query,
     match_version_query,
+    match_spec_version_query,
 ]
 
 ObjectDeleteParams = [
     match_version_query,
-    match_spec_version_query
+    match_spec_version_query,
 ]
 
 
