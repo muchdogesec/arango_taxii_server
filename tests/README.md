@@ -9,6 +9,7 @@ source arango_taxii_server-venv/bin/activate
 pip3 install -r requirements.txt
 ```
 
+
 ### Import required data
 
 #### ATT&CK data
@@ -17,7 +18,18 @@ Download and setup a stix2arango install outside of arango_taxii_server (do not 
 
 Once done can then run...
 
+<details> <summary> <h4>  setup database for testing automatically </h4> </summary>
+   
 ```shell
+sudo docker run -e ARANGO_ROOT_PASSWORD=root -p 8529:8529 arangodb/arangodb
+python tests/setup_arango.py
+```
+</details>
+
+
+<details> <summary> <h4> OR setup database for testing manually </h4> </summary>
+
+
 ```shell
 python3 utilities/arango_cti_processor/insert_archive_attack_enterprise.py --database arango_taxii_server_tests --versions 14_1,15_0,15_1 --ignore_embedded_relationships false && \
 python3 utilities/arango_cti_processor/insert_archive_attack_ics.py --database arango_taxii_server_tests --versions 14_1,15_0,15_1 --ignore_embedded_relationships false && \
@@ -30,14 +42,14 @@ This will install the MITRE ATT&CK versions 14.1, 15.0, 15.1 into ArangoDB into 
 * `mitre_attack_ics_vertex_collection`/`mitre_attack_ics_edge_collection`
 * `mitre_attack_mobile_vertex_collection`/`mitre_attack_mobile_edge_collection`
 
-#### Dummy data
+###### Dummy data
 
 You should also manually create two collections in the `arango_taxii_server_tests_database`;
 
 * `dummy_post_vertex_collection`: type = document
 * `dummy_post_edge_collection`: type = edge
 
-### Configure Arango users for testing
+###### Configure Arango users for testing
 
 To test permissions, setup 3 users in your local Arango instance (all with password `testing123`);
 
@@ -50,6 +62,8 @@ You also need to ensure the default `root` user on your install with an empty pa
 To make it a bit clearer, here's an example of what `read_write_user` permissions should look like:
 
 ![](example_permissions.png)
+
+</details>
 
 ### Set `.env` file for arango_taxii_server
 
