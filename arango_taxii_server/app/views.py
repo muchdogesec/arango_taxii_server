@@ -1,8 +1,10 @@
 
 # Create your views here.
+import logging
 from urllib.parse import urljoin
 import uuid
 
+import django.core.exceptions
 from drf_spectacular.utils import extend_schema, extend_schema_serializer
 from rest_framework import decorators, generics, permissions, views, viewsets, exceptions
 from rest_framework.request import Request
@@ -48,7 +50,7 @@ def get_status(id):
         status = models.UploadTask.objects.get(pk=id)
         s = serializers.TaxiiStatusSerializer(status)
         return Response(s.data)
-    except models.UploadTask.DoesNotExist as e:
+    except (models.UploadTask.DoesNotExist, django.core.exceptions.ValidationError) as e:
         return ErrorResp(404, f"status object with status-id `{id}` does not exist")
 
 class ArangoView(views.APIView):
@@ -57,9 +59,13 @@ class ArangoView(views.APIView):
     def handle_exception(self, exc):
         if isinstance(exc, arango_helper.ArangoError):
             return ErrorResp(exc.http_code, exc.message)
-        if isinstance (exc, exceptions.APIException):
+        elif isinstance (exc, exceptions.APIException):
             return ErrorResp(exc.status_code, exc.default_detail, exc.get_full_details())
-        return super().handle_exception(exc)
+        elif isinstance(exc, django.core.exceptions.ValidationError):
+            return ErrorResp(400, "The server did not understand the request or filter parameters", details=exc.error_list)
+        else:
+            logging.exception(exc, exc_info=True)
+            return ErrorResp(500, "Server ran into an error while processing request")
 
 
 
