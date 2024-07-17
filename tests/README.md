@@ -9,7 +9,6 @@ source arango_taxii_server-venv/bin/activate
 pip3 install -r requirements.txt
 ```
 
-
 ### Import required data
 
 #### ATT&CK data
@@ -18,17 +17,14 @@ Download and setup a stix2arango install outside of arango_taxii_server (do not 
 
 Once done can then run...
 
-<details> <summary> <h4>  setup database for testing automatically </h4> </summary>
+##### setup database for testing automatically
    
 ```shell
 sudo docker run -e ARANGO_ROOT_PASSWORD=root -p 8529:8529 arangodb/arangodb
 python tests/setup_arango.py
 ```
-</details>
 
-
-<details> <summary> <h4> OR setup database for testing manually </h4> </summary>
-
+##### OR setup database for testing manually
 
 ```shell
 python3 utilities/arango_cti_processor/insert_archive_attack_enterprise.py --database arango_taxii_server_tests --versions 14_1,15_0,15_1 --ignore_embedded_relationships false && \
@@ -41,6 +37,16 @@ This will install the MITRE ATT&CK versions 14.1, 15.0, 15.1 into ArangoDB into 
 * `mitre_attack_enterprise_vertex_collection`/`mitre_attack_enterprise_edge_collection`
 * `mitre_attack_ics_vertex_collection`/`mitre_attack_ics_edge_collection`
 * `mitre_attack_mobile_vertex_collection`/`mitre_attack_mobile_edge_collection`
+
+And then for the versioning tests
+
+```shell
+python3 utilities/arango_cti_processor/insert_archive_attack_enterprise.py --database arango_taxii_server_tests_versioning --ignore_embedded_relationships true &&
+```
+
+This will install all versions of MITRE ATT&CK Enterprise into the database `arango_taxii_server_tests_versioning` with each dataset in the following collections:
+
+* `mitre_attack_enterprise_vertex_collection`/`mitre_attack_enterprise_edge_collection`
 
 ###### Dummy data
 
@@ -62,8 +68,6 @@ You also need to ensure the default `root` user on your install with an empty pa
 To make it a bit clearer, here's an example of what `read_write_user` permissions should look like:
 
 ![](example_permissions.png)
-
-</details>
 
 ### Set `.env` file for arango_taxii_server
 
