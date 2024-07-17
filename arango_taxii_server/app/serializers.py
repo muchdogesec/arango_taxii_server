@@ -2,7 +2,7 @@
 
 import json
 from drf_spectacular.utils import (OpenApiExample, extend_schema_field,
-                                   extend_schema_serializer, inline_serializer)
+                                   extend_schema_serializer)
 from rest_framework import serializers
 
 from .. import conf
@@ -24,10 +24,6 @@ class SerializerBase(serializers.Serializer):
             data[field] = field_obj.data
         return super().run_validation(data)
 
-class NoManySerializer(serializers.Serializer):
-    def __init__(self, instance=None, data=..., **kwargs):
-        kwargs.pop("many", None)
-        super().__init__(instance, data, **kwargs)
 
 class ServerInfoSerializer(serializers.Serializer):
     title = serializers.CharField(default=conf.server_title)
@@ -56,37 +52,26 @@ class MultiCollectionSerializer(SerializerBase):
 class StixObjectField(serializers.DictField):
     pass
 
-
-
-class TaxiiEnvelopeSerializer(serializers.Serializer):
-    more = serializers.BooleanField(default=False)
-    next = serializers.CharField(required=False)
-    objects = serializers.ListField(child=StixObjectField())
-
-
-@extend_schema_serializer(examples=[OpenApiExample('example', value={
-  "more": True,
-  "next": "34617997_44",
-  "objects": [
-    {
-      "date_added": "2020-10-16T00:00:00.000Z",
+@extend_schema_serializer(examples=[
+    OpenApiExample("relationship", {
+      "date_added": "2024-01-16T00:00:00.000Z",
       "id": "relationship--da230f89-3019-5016-8b40-695f343988ea",
       "media_type": "application/stix+json;version=2.1",
       "version": "2023-02-28T00:00:00.000Z"
-    },
-    {
-      "date_added": "2023-02-28T00:00:00.000Z",
-      "id": "relationship--d99e8a09-00d6-5e64-bad8-e9a75879f63c",
+    }),
+    OpenApiExample("attack-pattern", {
+      "date_added": "2024-06-07T16:10:44.168441Z",
+      "id": "attack-pattern--09b130a2-a77e-4af0-a361-f46f9aad1345",
       "media_type": "application/stix+json;version=2.1",
-      "version": "2023-02-28T00:00:00.000Z"
-    }]})])
-class ManifestSerializer(TaxiiEnvelopeSerializer):
-    objects =  inline_serializer("object_manifest", dict(
-        date_added=serializers.CharField(),
-        id=serializers.CharField(),
-        media_type=serializers.CharField(default=conf.media_type, read_only=True),
-        version=serializers.CharField())
-    , many=True, required=True)
+      "version": "2023-08-14T17:54:22.970Z"
+    }),
+    ])
+class ManifestObjectSerializer(serializers.Serializer):
+    id = serializers.CharField()
+    date_added = serializers.DateTimeField()
+    version = serializers.DateTimeField()
+    media_type = serializers.CharField(default=conf.media_type)
+
 
 
 @extend_schema_serializer(examples=[OpenApiExample('example', value={"objects":[
@@ -136,12 +121,8 @@ class ManifestSerializer(TaxiiEnvelopeSerializer):
             "target_ref": "identity--733c5838-34d9-4fbf-949c-62aba761184c"
         }
 ]})])
-class ObjectSerializer(TaxiiEnvelopeSerializer):
+class ObjectsSerializer(serializers.Serializer):
     objects = serializers.ListField(child=StixObjectField())
-
-class VersionsSerializer(TaxiiEnvelopeSerializer):
-    objects = None
-    versions = serializers.ListField(child=serializers.DateTimeField())
 
 
 class TaxxiiStatusObjectField(serializers.ModelSerializer):
@@ -208,7 +189,7 @@ class TaxiiErrorSerializer(serializers.Serializer):
     description = serializers.CharField(required=False)
     error_id = serializers.CharField(required=False)
     error_code = serializers.CharField(required=False)
-    http_status = serializers.CharField(required=False)
+    http_status = serializers.CharField(required=True)
 
     @classmethod
     def error_responses(cls, *status_codes):

@@ -8,6 +8,8 @@ from drf_spectacular.utils import _SchemaType, OpenApiParameter
 from drf_spectacular.types import OpenApiTypes
 from rest_framework import renderers
 
+from arango_taxii_server.app.utils import TaxiiEnvelope
+
 from .. import conf
 from .authentication import ArangoServerAuthentication
 import uritemplate
@@ -86,7 +88,7 @@ added_after_query = OpenApiParameter("added_after", type=Datetime, description=d
     A single timestamp that filters objects to only include those objects added after the specified timestamp. This filter considers the `modified` time in an object if exists, else it considers the stix2arango `_record_modified` time. The value of this parameter is a timestamp. In the format `YYYY-MM-DDThh:mm:ss.sssZ`
     """))
 limit_query = OpenApiParameter(
-    "limit",
+   TaxiiEnvelope.page_size_query_param,
     type=int,
     description=dedent(
         """
@@ -96,7 +98,7 @@ limit_query = OpenApiParameter(
 )
 
 next_query = OpenApiParameter(
-    "next",
+    TaxiiEnvelope.page_query_param,
     type=OpenApiTypes.STR,
     description=dedent(
         """
@@ -244,6 +246,9 @@ class CustomAutoSchema(AutoSchema):
         return params + self.global_params
 
     def _is_list_view(self, *args, **kwargs):
+        if getattr(self.view, 'pagination_class', None):
+            print(self.path)
+            return True
         return False
     
     def map_renderers(self, attribute: str) -> list[Any]:

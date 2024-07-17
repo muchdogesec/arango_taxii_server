@@ -1,23 +1,20 @@
 
 # Create your views here.
-import json
-import tempfile
 from urllib.parse import urljoin
 import uuid
 
 from drf_spectacular.utils import extend_schema, extend_schema_serializer
-from rest_framework import decorators, generics, permissions, views, viewsets, response, exceptions
+from rest_framework import decorators, generics, permissions, views, viewsets, exceptions
 from rest_framework.request import Request
 # from rest_framework.response import Response
-from datetime import datetime as dt
 from rest_framework import renderers, parsers
+
+from .utils import ErrorResp, Response, TaxiiEnvelope
 
 from . import task_helpers
 from .. import conf
 from . import arango_helper, open_api_schemas, serializers, models
 from .serializers import ServerInfoSerializer
-from enum import StrEnum
-from django.shortcuts import get_object_or_404
 import textwrap
 
 
@@ -53,20 +50,6 @@ def get_status(id):
         return Response(s.data)
     except models.UploadTask.DoesNotExist as e:
         return ErrorResp(404, f"status object with status-id `{id}` does not exist")
-
-
-class Response(response.Response):
-    DEFAULT_HEADERS = {
-        'Access-Control-Allow-Origin': '*',
-    }
-    def __init__(self, data=None, status=None, template_name=None, headers=None, exception=False, content_type=conf.taxii_type):
-        headers = headers or {}
-        headers.update(self.DEFAULT_HEADERS)
-        super().__init__(data, status, template_name, headers, exception, content_type)
-
-class ErrorResp(Response):
-    def __init__(self, status, title, details=None):
-        super().__init__({"title": title, "http_status": status, "details": dict(content=details)}, status=status)
 
 class ArangoView(views.APIView):
     permission_classes = [permissions.IsAuthenticated]
@@ -119,6 +102,11 @@ class CollectionView(ArangoView, viewsets.ViewSet):
     lookup_url_kwarg = "collection_id"
     serializer_class = serializers.MultiCollectionSerializer
 
+    @property
+    def pagination_class(self):
+        if self.action == 'manifest':
+            return TaxiiEnvelope('objects')
+
     @extend_schema("taxii2_collections_list", tags=open_api_schemas.OpenApiTags.COLLECTIONS.tags, summary="Get information about all collections", responses={200: serializers.MultiCollectionSerializer, **serializers.TaxiiErrorSerializer.error_responses()}, description=textwrap.dedent("""
         This Endpoint provides information about the Collections hosted under this API Root. This is similar to the response to get a Collection, but rather than providing information about one Collection it provides information about all of the Collections. Most importantly, it provides the Collection's id, which is used to request objects or manifest entries from the Collection.
         """))
@@ -139,23 +127,35 @@ class CollectionView(ArangoView, viewsets.ViewSet):
         s.is_valid()
         return Response(s.data)
 
-    @extend_schema(responses={200:serializers.ManifestSerializer, **serializers.TaxiiErrorSerializer.error_responses()}, parameters=open_api_schemas.ObjectsQueryParams, tags=open_api_schemas.OpenApiTags.COLLECTIONS.tags, summary="Get manifest information about the object in a collection.",  description=textwrap.dedent("""
+    @extend_schema(responses={200:serializers.ManifestObjectSerializer(many=True), **serializers.TaxiiErrorSerializer.error_responses()}, parameters=open_api_schemas.ObjectsQueryParams, tags=open_api_schemas.OpenApiTags.COLLECTIONS.tags, summary="Get manifest information about the object in a collection.",  description=textwrap.dedent("""
         This Endpoint retrieves a manifest about the objects in a Collection. It supports filtering identical to the get objects Endpoint but rather than returning the object itself it returns metadata about the object. It can be used to retrieve metadata to decide whether it's worth retrieving the actual objects.
         """))
     @decorators.action(methods=['GET'], detail=True)
     def manifest(self, request, api_root="", collection_id=""):
         db: arango_helper.ArangoSession =  request.user.arango_session
         manifest = db.get_objects_all(api_root, collection_id, request.query_params, 'manifest')
-        s = serializers.ManifestSerializer(data={"objects": manifest.result, "more": manifest.dict["hasMore"], "next": manifest.dict.get("next")})
-        s.is_valid()
-        return Response(s.data, headers=get_added_date_headers(manifest.dict))
+        for r in manifest.result:
+            r["media_type"] = conf.media_type
+        return self.pagination_class.get_paginated_response(manifest.result, manifest)
 
 class ObjectView(ArangoView, viewsets.ViewSet):
-    serializer_class = serializers.ObjectSerializer
     lookup_url_kwarg = "object_id"
     parser_classes = [TaxiiJSONParser]
 
-    @extend_schema(tags=open_api_schemas.OpenApiTags.COLLECTIONS.tags, responses={200:serializers.TaxiiStatusSerializer, **serializers.TaxiiErrorSerializer.error_responses(400, 401, 403, 404, 406, 413, 415, 422)}, request=serializers.ObjectSerializer, summary="Add a new object to a specific collection", description=textwrap.dedent("""
+    @property
+    def pagination_class(self):
+        print("get paginator")
+        if self.action == 'versions':
+            return TaxiiEnvelope("versions")
+        return TaxiiEnvelope("objects")
+    
+    @property
+    def serializer_class(self):
+        if self.action == 'create':
+            return serializers.ObjectsSerializer
+        return serializers.StixObjectField
+
+    @extend_schema(tags=open_api_schemas.OpenApiTags.COLLECTIONS.tags, responses={200:serializers.TaxiiStatusSerializer, **serializers.TaxiiErrorSerializer.error_responses(400, 401, 403, 404, 406, 413, 415, 422)}, request=serializers.ObjectsSerializer, summary="Add a new object to a specific collection", description=textwrap.dedent("""
         This Endpoint adds objects to a Collection. Successful responses to this Endpoint will contain a status resource describing the status of the request. The status resource contains an id, which can be used to make requests to the get status Endpoint, a status flag to indicate whether the request is completed or still being processed, and information about the status of the particular objects in the request.
         """))
     def create(self, request: Request, api_root="", collection_id="", more_queries={}):
@@ -186,26 +186,22 @@ class ObjectView(ArangoView, viewsets.ViewSet):
     def list(self, request: Request, api_root="", collection_id="", more_queries={}):
         db: arango_helper.ArangoSession =  request.user.arango_session
         objects = db.get_objects_all(api_root, collection_id, {**request.query_params.dict(), **more_queries}, "objects")
-        s = serializers.ObjectSerializer(data={"objects": objects.result, "more": objects.dict["hasMore"], "next": objects.dict.get("next")})
-        s.is_valid()
-        return Response(s.data, headers=get_added_date_headers(objects.dict))
+        return self.pagination_class.get_paginated_response(objects.result, objects)
 
-    @extend_schema(tags=open_api_schemas.OpenApiTags.COLLECTIONS.tags, summary="Get a specific object from a collection", parameters=open_api_schemas.SingleObjectQueryParams, responses={200: serializer_class, **serializers.TaxiiErrorSerializer.error_responses()}, description=textwrap.dedent("""
+    @extend_schema("taxii2_collections_objects_retrieve_envelope", tags=open_api_schemas.OpenApiTags.COLLECTIONS.tags, summary="Get a specific object from a collection", parameters=open_api_schemas.SingleObjectQueryParams, responses={200: serializer_class, **serializers.TaxiiErrorSerializer.error_responses()}, description=textwrap.dedent("""
         This Endpoint gets an object from a Collection by its id. It can be thought of as a search where the `match[id]` parameter is set to the `{object-id}` in the path. The `{object-id}` MUST be the STIX id.
         """))
     def retrieve(self, request:Request, api_root="", collection_id="", object_id=""):
         return self.list(request, api_root, collection_id, more_queries={"match[id]": object_id})
 
-    @extend_schema(parameters=open_api_schemas.VersionsQueryParams, responses={200: serializers.VersionsSerializer, **serializers.TaxiiErrorSerializer.error_responses()}, tags=open_api_schemas.OpenApiTags.COLLECTIONS.tags, summary="Get a list of object versions from a collection", description=textwrap.dedent("""
+    @extend_schema(parameters=open_api_schemas.VersionsQueryParams, responses={200: open_api_schemas.OpenApiTypes.DATETIME, **serializers.TaxiiErrorSerializer.error_responses()}, tags=open_api_schemas.OpenApiTags.COLLECTIONS.tags, summary="Get a list of object versions from a collection", description=textwrap.dedent("""
         This Endpoint retrieves a list of one or more versions of an object in a Collection. This list can be used to decide whether it's worth retrieving the actual objects, or if new versions have been added. If a STIX object is not versioned (and therefore does not have a `modified` timestamp), the server uses the stix2atango `_record_modified` timestamp.
         """))
     @decorators.action(methods=['GET'], detail=True)
     def versions(self, request:Request, api_root="", collection_id="", object_id=""):
         db: arango_helper.ArangoSession =  request.user.arango_session
         objects = db.get_objects_all(api_root, collection_id, {"match[version]": "all", **request.query_params.dict(), "match[id]": object_id}, "versions")
-        s = serializers.VersionsSerializer(data={"versions": [x["version"] for x in objects.result], "more": objects.dict["hasMore"], "next": objects.dict.get("next")})
-        s.is_valid()
-        return Response(s.data, headers=get_added_date_headers(objects.dict))
+        return self.pagination_class.get_paginated_response([x["version"] for x in objects.result], objects)
 
     @extend_schema(parameters=open_api_schemas.ObjectDeleteParams, tags=open_api_schemas.OpenApiTags.COLLECTIONS.tags, summary="Delete a specific object from a collection", responses={(200, TaxiiJSONRenderer.media_type):open_api_schemas.OpenApiTypes.NONE, **serializers.TaxiiErrorSerializer.error_responses()}, description=textwrap.dedent("""
         This Endpoint deletes an object from a Collection by its id. The `{object-id}` MUST be the STIX id. To support removing a particular version of an object, this Endpoint supports filtering. The only valid match parameter is `version`. If no filters are applied, all versions of the object will be deleted.
