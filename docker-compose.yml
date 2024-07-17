@@ -5,7 +5,8 @@ services:
         command: >
                 bash -c "python manage.py makemigrations &&
                             python manage.py migrate && 
-                            gunicorn arango_taxii_server.wsgi:application --bind 0.0.0.0:8000"
+                            gunicorn arango_taxii_server.wsgi:application --bind 0.0.0.0:8000
+                        "
         volumes:
             - .:/usr/src/app/
         ports:
@@ -17,8 +18,10 @@ services:
         env_file:
             - ./.env
         depends_on:
-            - pgdb
-            - redis
+            pgdb:
+                condition: service_healthy
+            redis:
+                condition: service_started
     celery:
         build: .
         command: >
@@ -45,6 +48,12 @@ services:
 
         volumes:
             - pgdata:/var/lib/postgresql/data/
+        healthcheck:
+            test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+            interval: 10s
+            retries: 5
+            start_period: 10s
+            timeout: 10s
     redis:
         image: "redis:alpine"
         
