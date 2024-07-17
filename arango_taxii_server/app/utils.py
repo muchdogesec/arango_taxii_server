@@ -47,6 +47,7 @@ class TaxiiEnvelope(pagination.PageNumberPagination):
                 },
                 'next': {
                     'type': 'string',
+                    'example': "112121_2",
                 },
                 self.results_key: schema,
             },

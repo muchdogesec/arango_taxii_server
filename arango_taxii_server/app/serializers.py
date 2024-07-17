@@ -6,7 +6,7 @@ from drf_spectacular.utils import (extend_schema_field,
 from rest_framework import serializers
 
 from .. import conf
-from .open_api_schemas import EnvelopeObjectsObject, ArangoTaxiiOpenApiExample
+from .open_api_schemas import StixObject, ArangoTaxiiOpenApiExample
 from . import models
 
 
@@ -48,7 +48,7 @@ class MultiCollectionSerializer(SerializerBase):
     collections = SingleCollectionSerializer(many=True)
 
 
-@extend_schema_field(EnvelopeObjectsObject, component_name="objects_object")
+@extend_schema_field(StixObject, component_name="objects_object")
 class StixObjectField(serializers.DictField):
     pass
 

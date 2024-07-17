@@ -148,8 +148,7 @@ class ObjectView(ArangoView, viewsets.ViewSet):
             return TaxiiEnvelope("versions")
         return TaxiiEnvelope("objects")
     
-    @property
-    def serializer_class(self):
+    def get_serializer_class(self):
         if self.action == 'create':
             return serializers.ObjectsSerializer
         return serializers.StixObjectField
@@ -165,7 +164,7 @@ class ObjectView(ArangoView, viewsets.ViewSet):
             ):
                 return ErrorResp(413, f"Request Entity Too Large. Request's Content-Length must not be higher than api_root.max_content_length.")
 
-        serializer = self.serializer_class(data=request.data)
+        serializer = self.get_serializer_class()(data=request.data)
         serializer.is_valid()
         status_id = uuid.uuid4()
         serializer1 = serializers.TaxiiStatusSerializer(data=dict(id=status_id, username=db.user, password=db.password, db=api_root, collection=collection_id))
@@ -180,13 +179,13 @@ class ObjectView(ArangoView, viewsets.ViewSet):
 
     @extend_schema("taxii2_collections_objects_list", parameters=open_api_schemas.ObjectsQueryParams, tags=open_api_schemas.OpenApiTags.COLLECTIONS.tags, summary="Get all objects from a collection", description=textwrap.dedent("""
         This Endpoint retrieves objects from a Collection. Clients can search for objects in the Collection, retrieve all objects in a Collection, or paginate through objects in the Collection. Pagination is supported by the `limit` URL query parameter and the `more` property of the envelope.
-        """), responses={200: serializer_class, **serializers.TaxiiErrorSerializer.error_responses()})
+        """), responses={200: open_api_schemas.StixObject, **serializers.TaxiiErrorSerializer.error_responses()})
     def list(self, request: Request, api_root="", collection_id="", more_queries={}):
         db: arango_helper.ArangoSession =  request.user.arango_session
         objects = db.get_objects_all(api_root, collection_id, {**request.query_params.dict(), **more_queries}, "objects")
         return self.pagination_class.get_paginated_response(objects.result, objects)
 
-    @extend_schema("taxii2_collections_objects_retrieve_envelope", tags=open_api_schemas.OpenApiTags.COLLECTIONS.tags, summary="Get a specific object from a collection", parameters=open_api_schemas.SingleObjectQueryParams, responses={200: serializer_class, **serializers.TaxiiErrorSerializer.error_responses()}, description=textwrap.dedent("""
+    @extend_schema("taxii2_collections_objects_retrieve_envelope", tags=open_api_schemas.OpenApiTags.COLLECTIONS.tags, summary="Get a specific object from a collection", parameters=open_api_schemas.SingleObjectQueryParams, responses={200: open_api_schemas.StixObject, **serializers.TaxiiErrorSerializer.error_responses()}, description=textwrap.dedent("""
         This Endpoint gets an object from a Collection by its id. It can be thought of as a search where the `match[id]` parameter is set to the `{object-id}` in the path. The `{object-id}` MUST be the STIX id.
         """))
     def retrieve(self, request:Request, api_root="", collection_id="", object_id=""):

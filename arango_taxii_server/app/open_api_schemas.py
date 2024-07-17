@@ -47,7 +47,7 @@ StixType = {
 }
 
 
-EnvelopeObjectsObject = {
+StixObject = {
     "type": "object",
     "format": "stix-object",
     "properties": {
