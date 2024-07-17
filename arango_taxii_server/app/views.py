@@ -42,13 +42,8 @@ def date_cmp(iterable, max=True):
             value = v
     return value
     
-def get_added_date_headers(objects, first_key='created', last_key='modified'):
-    if not objects:
-        return {"X-TAXII-Date-Added-First": None, "X-TAXII-Date-Added-Last": None}
-    
-    first_min = date_cmp(map(lambda obj: obj if first_key is None else obj.get(first_key), objects), max=False)
-    last_max = date_cmp(map(lambda obj: obj if last_key is None else obj.get(last_key), objects), max=True)
-    return {"X-TAXII-Date-Added-First": first_min, "X-TAXII-Date-Added-Last": last_max}
+def get_added_date_headers(object_dict):
+    return {"X-TAXII-Date-Added-First": object_dict.get("added_first"), "X-TAXII-Date-Added-Last": object_dict.get("added_last")}
 
 def get_status(id):
     try:
@@ -153,7 +148,7 @@ class CollectionView(ArangoView, viewsets.ViewSet):
         manifest = db.get_objects_all(api_root, collection_id, request.query_params, 'manifest')
         s = serializers.ManifestSerializer(data={"objects": manifest.result, "more": manifest.dict["hasMore"], "next": manifest.dict.get("next")})
         s.is_valid()
-        return Response(s.data, headers=get_added_date_headers(manifest.result, first_key='date_added', last_key='version'))
+        return Response(s.data, headers=get_added_date_headers(manifest.dict))
 
 class ObjectView(ArangoView, viewsets.ViewSet):
     serializer_class = serializers.ObjectSerializer
@@ -193,7 +188,7 @@ class ObjectView(ArangoView, viewsets.ViewSet):
         objects = db.get_objects_all(api_root, collection_id, {**request.query_params.dict(), **more_queries}, "objects")
         s = serializers.ObjectSerializer(data={"objects": objects.result, "more": objects.dict["hasMore"], "next": objects.dict.get("next")})
         s.is_valid()
-        return Response(s.data, headers=get_added_date_headers(objects.result))
+        return Response(s.data, headers=get_added_date_headers(objects.dict))
 
     @extend_schema(tags=open_api_schemas.OpenApiTags.COLLECTIONS.tags, summary="Get a specific object from a collection", parameters=open_api_schemas.SingleObjectQueryParams, responses={200: serializer_class, **serializers.TaxiiErrorSerializer.error_responses()}, description=textwrap.dedent("""
         This Endpoint gets an object from a Collection by its id. It can be thought of as a search where the `match[id]` parameter is set to the `{object-id}` in the path. The `{object-id}` MUST be the STIX id.
@@ -208,9 +203,9 @@ class ObjectView(ArangoView, viewsets.ViewSet):
     def versions(self, request:Request, api_root="", collection_id="", object_id=""):
         db: arango_helper.ArangoSession =  request.user.arango_session
         objects = db.get_objects_all(api_root, collection_id, {"match[version]": "all", **request.query_params.dict(), "match[id]": object_id}, "versions")
-        s = serializers.VersionsSerializer(data={"versions": objects.result, "more": objects.dict["hasMore"], "next": objects.dict.get("next")})
+        s = serializers.VersionsSerializer(data={"versions": [x["version"] for x in objects.result], "more": objects.dict["hasMore"], "next": objects.dict.get("next")})
         s.is_valid()
-        return Response(s.data, headers=get_added_date_headers(objects.result, first_key=None, last_key=None))
+        return Response(s.data, headers=get_added_date_headers(objects.dict))
 
     @extend_schema(parameters=open_api_schemas.ObjectDeleteParams, tags=open_api_schemas.OpenApiTags.COLLECTIONS.tags, summary="Delete a specific object from a collection", responses={(200, TaxiiJSONRenderer.media_type):open_api_schemas.OpenApiTypes.NONE, **serializers.TaxiiErrorSerializer.error_responses()}, description=textwrap.dedent("""
         This Endpoint deletes an object from a Collection by its id. The `{object-id}` MUST be the STIX id. To support removing a particular version of an object, this Endpoint supports filtering. The only valid match parameter is `version`. If no filters are applied, all versions of the object will be deleted.

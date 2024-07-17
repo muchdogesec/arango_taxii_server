@@ -5,6 +5,7 @@ import re
 import subprocess
 from urllib.parse import urljoin, urlparse
 from django.conf import settings
+from datetime import datetime
 
 import requests
 
@@ -136,6 +137,23 @@ class ArangoSession:
         resp = self.parse_response(self.session.post(url, json=payload))
         if resp.dict.get('hasMore'):
             resp.dict['next'] = f"{resp.dict['id']}_{resp.dict.get('nextBatchId', f'undef+{random.random()}')}"
+
+        # if query_type == 'versions':
+        #     resp.result = [x["modified"] for x in resp.result]
+        
+        # delete _record_modified and add set first and last dates
+        if resp.result:
+            added_last = "0000"
+            added_first = "9999"
+            for r in resp.result:
+                date_added = r['_record_modified']
+                if date_added < added_first:
+                    added_first = date_added
+                if date_added > added_last:
+                    added_last = date_added
+                del r['_record_modified']
+            resp.dict.update(added_last=added_last, added_first=added_first)
+
         return resp
 
     def remove_object(self, db_name, collection, object_id, match_version=None):
@@ -246,7 +264,7 @@ class ArangoSession:
         
         if added_after := query_params.get('added_after'):
             AQL += """
-            FILTER doc.created > @added_after
+            FILTER doc._record_modified > @added_after
             """
             binding["added_after"] = added_after
 
@@ -275,26 +293,27 @@ class ArangoSession:
         /* END ---- make sure only one id, modified time pair ----- */
 
         FILTER document.id != NULL
-        SORT document.modified, document.created ASC
+        SORT document._record_modified ASC
 
         """
         ###
-        if req_type=="manifest":
+        if req_type in ["manifest", "versions"]:
             AQL += """
-            RETURN { "id": document.id, "date_added": document.created, "version": document.modified or document.created }
+            RETURN { 
+                id: document.id,
+                date_added: document._record_modified,
+                _record_modified: document._record_modified,
+                version: document.modified or document.created,
+            }
             """
         elif req_type=="objects":
             AQL += """
-            RETURN KEEP(document, ATTRIBUTES(document, true))
-            """
-        elif req_type == "versions":
-            AQL += """
-            RETURN document.modified
+            RETURN KEEP(document, PUSH(ATTRIBUTES(document, true), "_record_modified"))
             """
         else:
-            pass
+            raise ArangoError(500, f"unknown request type: {req_type}")
         retval["query"] = AQL
-        print("QUERY is:", AQL)
+        print(AQL)
         return retval
 
     @classmethod
