@@ -149,21 +149,23 @@ REST_FRAMEWORK = {
 
 from . import conf
 SPECTACULAR_SETTINGS = {
-    'TITLE': conf.server_title,
-    'DESCRIPTION': conf.server_description,
+    'TITLE': "Arango TAXII Server API",
+    'DESCRIPTION': dedent("""
+        Arango TAXII Server is a production ready implementation of a TAXII 2.1 Server designed to work with ArangoDB.
+    """),
     'VERSION': '1.0.0',
     'CONTACT': {
-        'email': conf.server_contact_email,
-        'url': conf.server_contact_url,
+        'email': 'noreply@dogesec.com',
+        'url': 'https://github.com/muchdogesec/arango_taxii_server',
     },
-    'SERVERS':[
-        {
-        'url': conf.server_host_path
-    }
-    ],
+    # 'SERVERS':[
+    #     {
+    #     'url': conf.server_host_path
+    # }
+    # ],
     # 'SERVE_INCLUDE_SCHEMA': False,
     # OTHER SETTINGS
-    'SWAGGER_UI_DIST': "https://petstore3.swagger.io/"
+    'SWAGGER_UI_DIST': "http://127.0.0.1:8000/api/schema/swagger-ui/"
 }
 
 CORS_ALLOW_ALL_ORIGINS = True # If this is used then `CORS_ALLOWED_ORIGINS` will not have any effect
