@@ -13,6 +13,9 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 from pathlib import Path
 import os
 from textwrap import dedent
+from dotenv import load_dotenv
+
+load_dotenv()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -22,10 +25,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-kmx-hkths=on4-9097e)u9fwqm81ozrcec@o5j3q0m@=&%6q&w'
+SECRET_KEY = os.environ['DJANGO_SECRET']
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.environ['DEBUG']
 
 ALLOWED_HOSTS = []
 
@@ -158,19 +161,11 @@ SPECTACULAR_SETTINGS = {
     'CONTACT': {
         'email': 'noreply@dogesec.com',
         'url': 'https://github.com/muchdogesec/arango_taxii_server',
-    },
-    # 'SERVERS':[
-    #     {
-    #     'url': conf.server_host_path
-    # }
-    # ],
-    # 'SERVE_INCLUDE_SCHEMA': False,
-    # OTHER SETTINGS
-    'SWAGGER_UI_DIST': "http://127.0.0.1:8000/api/schema/swagger-ui/"
+    }
 }
 
 CORS_ALLOW_ALL_ORIGINS = True # If this is used then `CORS_ALLOWED_ORIGINS` will not have any effect
 CORS_ALLOW_CREDENTIALS = True
 
 DATA_UPLOAD_MAX_MEMORY_SIZE = conf.server_max_content_length
-DEFAULT_PAGINATION_LIMIT = 50
+DEFAULT_PAGINATION_LIMIT = os.environ['PAGE_SIZE']
