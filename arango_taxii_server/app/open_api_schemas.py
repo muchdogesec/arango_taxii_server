@@ -1,12 +1,13 @@
 from enum import Enum
 from textwrap import dedent
-from typing import Any, Dict, List, Literal
+from typing import Any, Dict, List, Literal, Sequence, Tuple
 
 from drf_spectacular.extensions import OpenApiAuthenticationExtension
 from drf_spectacular.openapi import AutoSchema, whitelisted
-from drf_spectacular.utils import _SchemaType, OpenApiParameter
+from drf_spectacular.utils import _SchemaType, OpenApiParameter, OpenApiExample
 from drf_spectacular.types import OpenApiTypes
 from rest_framework import renderers
+from rest_framework.fields import empty
 
 from arango_taxii_server.app.utils import TaxiiEnvelope
 
@@ -191,6 +192,10 @@ ObjectDeleteParams = [
     match_spec_version_query,
 ]
 
+class ArangoTaxiiOpenApiExample(OpenApiExample):
+    def __init__(self, *args, **kwargs):
+        kwargs['media_type'] = conf.taxii_type
+        super().__init__(*args, **kwargs)
 
 class OpenApiTags(Enum):
     API_ROOT = {
@@ -247,7 +252,6 @@ class CustomAutoSchema(AutoSchema):
 
     def _is_list_view(self, *args, **kwargs):
         if getattr(self.view, 'pagination_class', None):
-            print(self.path)
             return True
         return False
     
@@ -267,8 +271,8 @@ class CustomAutoSchema(AutoSchema):
                 keys.append(media_type)
         
         return keys
-                
-
+    
+    
 class ArangoServerAuthenticationScheme(OpenApiAuthenticationExtension):
     target_class = ArangoServerAuthentication
     name = "ArangoBasicAuth"

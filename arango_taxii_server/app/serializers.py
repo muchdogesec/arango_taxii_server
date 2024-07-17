@@ -1,12 +1,12 @@
 
 
 import json
-from drf_spectacular.utils import (OpenApiExample, extend_schema_field,
+from drf_spectacular.utils import (extend_schema_field,
                                    extend_schema_serializer)
 from rest_framework import serializers
 
 from .. import conf
-from .open_api_schemas import EnvelopeObjectsObject
+from .open_api_schemas import EnvelopeObjectsObject, ArangoTaxiiOpenApiExample
 from . import models
 
 
@@ -53,13 +53,13 @@ class StixObjectField(serializers.DictField):
     pass
 
 @extend_schema_serializer(examples=[
-    OpenApiExample("relationship", {
+    ArangoTaxiiOpenApiExample("relationship", {
       "date_added": "2024-01-16T00:00:00.000Z",
       "id": "relationship--da230f89-3019-5016-8b40-695f343988ea",
       "media_type": "application/stix+json;version=2.1",
       "version": "2023-02-28T00:00:00.000Z"
     }),
-    OpenApiExample("attack-pattern", {
+    ArangoTaxiiOpenApiExample("attack-pattern", {
       "date_added": "2024-06-07T16:10:44.168441Z",
       "id": "attack-pattern--09b130a2-a77e-4af0-a361-f46f9aad1345",
       "media_type": "application/stix+json;version=2.1",
@@ -74,53 +74,58 @@ class ManifestObjectSerializer(serializers.Serializer):
 
 
 
-@extend_schema_serializer(examples=[OpenApiExample('example', value={"objects":[
-        {
-            "type": "threat-actor",
-            "spec_version": "2.1",
-            "id": "threat-actor--dfaa8d77-07e2-4e28-b2c8-92e9f7b04428",
-            "created": "2014-11-19T23:39:03.893Z",
-            "modified": "2014-11-19T23:39:03.893Z",
-            "name": "Disco Team Threat Actor Group",
-            "description": "This organized threat actor group operates to create profit from all types of crime.",
-            "threat_actor_types": [
-                "crime-syndicate"
-            ],
-            "aliases": [
-                "Equipo del Discoteca"
-            ],
-            "roles": [
-                "agent"
-            ],
-            "goals": [
-                "Steal Credit Card Information"
-            ],
-            "sophistication": "expert",
-            "resource_level": "organization",
-            "primary_motivation": "personal-gain"
-        },
-        {
-            "type": "identity",
-            "spec_version": "2.1",
-            "id": "identity--733c5838-34d9-4fbf-949c-62aba761184c",
-            "created": "2016-08-23T18:05:49.307Z",
-            "modified": "2016-08-23T18:05:49.307Z",
-            "name": "Disco Team",
-            "description": "Disco Team is the name of an organized threat actor crime-syndicate.",
-            "identity_class": "organization",
-            "contact_information": "disco-team@stealthemail.com"
-        },
-        {
-            "type": "relationship",
-            "spec_version": "2.1",
-            "id": "relationship--a2e3efb5-351d-4d46-97a0-6897ee7c77a0",
-            "created": "2020-02-29T18:01:28.577Z",
-            "modified": "2020-02-29T18:01:28.577Z",
-            "relationship_type": "attributed-to",
-            "source_ref": "threat-actor--dfaa8d77-07e2-4e28-b2c8-92e9f7b04428",
-            "target_ref": "identity--733c5838-34d9-4fbf-949c-62aba761184c"
-        }
-]})])
+@extend_schema_serializer(examples=[
+    ArangoTaxiiOpenApiExample('example-empty', value=
+        {"objects":[]}),
+    ArangoTaxiiOpenApiExample('example', value=
+        {"objects":[
+            {
+                "type": "threat-actor",
+                "spec_version": "2.1",
+                "id": "threat-actor--dfaa8d77-07e2-4e28-b2c8-92e9f7b04428",
+                "created": "2014-11-19T23:39:03.893Z",
+                "modified": "2014-11-19T23:39:03.893Z",
+                "name": "Disco Team Threat Actor Group",
+                "description": "This organized threat actor group operates to create profit from all types of crime.",
+                "threat_actor_types": [
+                    "crime-syndicate"
+                ],
+                "aliases": [
+                    "Equipo del Discoteca"
+                ],
+                "roles": [
+                    "agent"
+                ],
+                "goals": [
+                    "Steal Credit Card Information"
+                ],
+                "sophistication": "expert",
+                "resource_level": "organization",
+                "primary_motivation": "personal-gain"
+            },
+            {
+                "type": "identity",
+                "spec_version": "2.1",
+                "id": "identity--733c5838-34d9-4fbf-949c-62aba761184c",
+                "created": "2016-08-23T18:05:49.307Z",
+                "modified": "2016-08-23T18:05:49.307Z",
+                "name": "Disco Team",
+                "description": "Disco Team is the name of an organized threat actor crime-syndicate.",
+                "identity_class": "organization",
+                "contact_information": "disco-team@stealthemail.com"
+            },
+            {
+                "type": "relationship",
+                "spec_version": "2.1",
+                "id": "relationship--a2e3efb5-351d-4d46-97a0-6897ee7c77a0",
+                "created": "2020-02-29T18:01:28.577Z",
+                "modified": "2020-02-29T18:01:28.577Z",
+                "relationship_type": "attributed-to",
+                "source_ref": "threat-actor--dfaa8d77-07e2-4e28-b2c8-92e9f7b04428",
+                "target_ref": "identity--733c5838-34d9-4fbf-949c-62aba761184c"
+            }
+        ]}),
+    ])
 class ObjectsSerializer(serializers.Serializer):
     objects = serializers.ListField(child=StixObjectField())
 
@@ -172,7 +177,7 @@ def error_examples():
     examples = []
     for status_code, title in TAXII_ERROR_MAPPING.items():
         examples.append(
-            OpenApiExample(
+            ArangoTaxiiOpenApiExample(
                 f"example-{status_code}",
                 status_codes=[status_code],
                 value=dict(

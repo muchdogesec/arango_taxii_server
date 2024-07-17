@@ -44,7 +44,6 @@ class ArangoFullPermissionParser:
             p = cls.permissions_map[value]
         elif isinstance(value, dict):
             p = cls.parse_permission(value['permission'])
-        print(value, p)
         return p
 
 
@@ -313,7 +312,6 @@ class ArangoSession:
         else:
             raise ArangoError(500, f"unknown request type: {req_type}")
         retval["query"] = AQL
-        print(AQL)
         return retval
 
     @classmethod
@@ -329,7 +327,6 @@ class ArangoSession:
             p = permissions_map[value]
         elif isinstance(value, dict):
             p = cls.parse_permission(value['permission'])
-        # print(value, p)
         return p
     @staticmethod
     def parse_response(response: requests.Response):

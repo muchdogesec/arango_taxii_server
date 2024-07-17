@@ -144,7 +144,6 @@ class ObjectView(ArangoView, viewsets.ViewSet):
 
     @property
     def pagination_class(self):
-        print("get paginator")
         if self.action == 'versions':
             return TaxiiEnvelope("versions")
         return TaxiiEnvelope("objects")
@@ -166,7 +165,6 @@ class ObjectView(ArangoView, viewsets.ViewSet):
             ):
                 return ErrorResp(413, f"Request Entity Too Large. Request's Content-Length must not be higher than api_root.max_content_length.")
 
-        # print(request.body)
         serializer = self.serializer_class(data=request.data)
         serializer.is_valid()
         status_id = uuid.uuid4()
