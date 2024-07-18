@@ -11,6 +11,10 @@ class BadCredentialsUser(unittest.TestCase):
 
     def setUp(self):
         self.headers = REQUEST_HEADERS.copy()
+        self.root_headers = REQUEST_HEADERS.copy()
+        root_user_pass = f"root:{USERS['root']}"
+        encoded_root_credentials = base64.b64encode(root_user_pass.encode()).decode('utf-8')
+        self.root_headers['Authorization'] = f"Basic {encoded_root_credentials}"
 
     def log_response(self, url, headers, response, auth=None, request_body=None):
         print(f"============Test Number: {self.__class__.global_test_counter}============")

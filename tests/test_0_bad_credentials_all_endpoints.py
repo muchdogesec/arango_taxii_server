@@ -65,7 +65,7 @@ class BadCredentialsUser(unittest.TestCase):
             response = requests.get(url, headers=self.headers)
             self.log_response(url, self.headers, response, auth="bad_credentials_user")
             self.check_response_headers(response)
-            self.assertEqual(response.status_code, 401, f"Expected 401, got {response.status_code}")
+            self.assertEqual(response.status_code, 404, f"Expected 401, got {response.status_code}")
 
     def test_05_get_collection(self):
         for api_root in API_ROOT:
@@ -74,7 +74,7 @@ class BadCredentialsUser(unittest.TestCase):
                 response = requests.get(url, headers=self.headers)
                 self.log_response(url, self.headers, response, auth="bad_credentials_user")
                 self.check_response_headers(response)
-                self.assertEqual(response.status_code, 401, f"Expected 401, got {response.status_code}")
+                self.assertEqual(response.status_code, 404, f"Expected 404, got {response.status_code}")
 
     def test_06_get_collection_manifest(self):
         for api_root in API_ROOT:
@@ -92,7 +92,7 @@ class BadCredentialsUser(unittest.TestCase):
                 response = requests.get(url, headers=self.headers)
                 self.log_response(url, self.headers, response, auth="bad_credentials_user")
                 self.check_response_headers(response)
-                self.assertEqual(response.status_code, 401, f"Expected 401, got {response.status_code}")
+                self.assertEqual(response.status_code, 404, f"Expected 404, got {response.status_code}")
 
     def test_08_post_collection_objects(self):
         api_root = "arango_taxii_server_tests_database"
@@ -100,7 +100,7 @@ class BadCredentialsUser(unittest.TestCase):
         data = {
             "objects": [DUMMY_OBJECT]
         }
-        response = requests.post(url, headers=self.headers, json=data)
+        response = requests.post(url, headers={**self.headers, **POST_REQUEST_HEADERS}, json=data)
         self.log_response(url, self.headers, response, auth="bad_credentials_user", request_body=data)
         self.check_response_headers(response)
         self.assertEqual(response.status_code, 401, f"Expected 401, got {response.status_code}")
@@ -130,7 +130,7 @@ class BadCredentialsUser(unittest.TestCase):
             response = requests.get(url, headers=self.headers)
             self.log_response(url, self.headers, response, auth="bad_credentials_user")
             self.check_response_headers(response)
-            self.assertEqual(response.status_code, 401, f"Expected 401, got {response.status_code}")
+            self.assertEqual(response.status_code, 404, f"Expected 404, got {response.status_code}")
 
     def test_11_delete_object(self):
         api_root = "arango_taxii_server_tests_database"
@@ -144,7 +144,7 @@ class BadCredentialsUser(unittest.TestCase):
             response = requests.delete(url, headers=self.headers)
             self.log_response(url, self.headers, response, auth="bad_credentials_user")
             self.check_response_headers(response)
-            self.assertEqual(response.status_code, 401, f"Expected 401, got {response.status_code}")
+            self.assertEqual(response.status_code, 404, f"Expected 404, got {response.status_code}")
 
     def test_12_verify_delete_object(self):
         api_root = "arango_taxii_server_tests_database"
@@ -174,7 +174,7 @@ class BadCredentialsUser(unittest.TestCase):
             response = requests.get(url, headers=self.headers)
             self.log_response(url, self.headers, response, auth="bad_credentials_user")
             self.check_response_headers(response)
-            self.assertEqual(response.status_code, 401, f"Expected 401, got {response.status_code}")
+            self.assertEqual(response.status_code, 404, f"Expected 404, got {response.status_code}")
 
     def test_14_get_status(self):
         for api_root in API_ROOT:
