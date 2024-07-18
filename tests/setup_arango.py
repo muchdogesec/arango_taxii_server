@@ -9,7 +9,7 @@ logging.basicConfig()
 ARANGO_HOST = "localhost"
 ARANGO_PORT = "8529"
 ROOT_USERNAME = "root"
-ROOT_PASSWORD = "root"
+ROOT_PASSWORD = ""
 S2A_DB_NAME = "arango_taxii_server_tests"
 DB_NAME = S2A_DB_NAME+"_database"
 DUMMY_COLLECTION_NAME = "dummy_post"
@@ -57,6 +57,8 @@ if __name__ == '__main__':
         ARANGODB_PASSWORD=ROOT_PASSWORD,
         ARANGODB_DATABASE=S2A_DB_NAME,
         )
-    os.system(f"python3 utilities/insert_archive_attack_enterprise.py --database {S2A_DB_NAME} --versions 14_1,15_0,15_1 --ignore_embedded_relationships false")
-    os.system(f"python3 utilities/insert_archive_attack_ics.py --database {S2A_DB_NAME} --versions 14_1,15_0,15_1 --ignore_embedded_relationships false")
-    os.system(f"python3 utilities/insert_archive_attack_mobile.py --database {S2A_DB_NAME} --versions 14_1,15_0,15_1 --ignore_embedded_relationships false")
+    os.system(f"python3 utilities/arango_taxii_server_import_test_data.py")
+    
+    # os.system(f"python3 utilities/insert_archive_attack_enterprise.py --database {S2A_DB_NAME} --versions 14_1,15_0,15_1 --ignore_embedded_relationships false")
+    # os.system(f"python3 utilities/insert_archive_attack_ics.py --database {S2A_DB_NAME} --versions 14_1,15_0,15_1 --ignore_embedded_relationships false")
+    # os.system(f"python3 utilities/insert_archive_attack_mobile.py --database {S2A_DB_NAME} --versions 14_1,15_0,15_1 --ignore_embedded_relationships false")
