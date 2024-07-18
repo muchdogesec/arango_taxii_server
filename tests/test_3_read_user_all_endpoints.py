@@ -177,7 +177,7 @@ class TestReadUser(unittest.TestCase):
                 response = requests.post(url, headers=self.headers, json=data)
                 self.log_response(self.global_test_counter, url, self.headers, response, auth="read_user", request_body=data, method="POST")
                 self.check_response_headers(response)
-                self.assertEqual(response.status_code, 400, f"Expected 400, got {response.status_code}")
+                self.assertEqual(response.status_code, 403, f"Expected 403, got {response.status_code}")
                 self.global_test_counter += 1
 
                 # Verify that the object was not added
@@ -242,7 +242,7 @@ class TestReadUser(unittest.TestCase):
                 response = requests.delete(url, headers=self.headers)
                 self.log_response(self.global_test_counter, url, self.headers, response, auth="read_user", method="DELETE")
                 self.check_response_headers(response)
-                self.assertEqual(response.status_code, 400, f"Expected 400, got {response.status_code}")
+                self.assertEqual(response.status_code, 403, f"Expected 403, got {response.status_code}")
                 self.global_test_counter += 1
 
                 # Verify that the object was not deleted
@@ -261,7 +261,7 @@ class TestReadUser(unittest.TestCase):
                 response = requests.delete(url, headers=self.headers)
                 self.log_response(self.global_test_counter, url, self.headers, response, auth="read_user", method="DELETE")
                 self.check_response_headers(response)
-                self.assertEqual(response.status_code, 400, f"Expected 400, got {response.status_code}")
+                self.assertEqual(response.status_code, 403, f"Expected 403, got {response.status_code}")
                 self.global_test_counter += 1
 
                 # Verify that the object was not deleted
@@ -280,7 +280,7 @@ class TestReadUser(unittest.TestCase):
                 response = requests.delete(url, headers=self.headers)
                 self.log_response(self.global_test_counter, url, self.headers, response, auth="read_user", method="DELETE")
                 self.check_response_headers(response)
-                self.assertEqual(response.status_code, 400, f"Expected 400, got {response.status_code}")
+                self.assertEqual(response.status_code, 403, f"Expected 403, got {response.status_code}")
                 self.global_test_counter += 1
 
                 # Verify that the object was not deleted
@@ -337,7 +337,7 @@ class TestReadUser(unittest.TestCase):
             response = requests.get(url, headers=self.headers)
             self.log_response(self.global_test_counter, url, self.headers, response, auth="read_user", method="GET")
             self.check_response_headers(response)
-            self.assertEqual(response.status_code, 400, f"Expected 400, got {response.status_code}")
+            self.assertEqual(response.status_code, 403, f"Expected 403, got {response.status_code}")
             self.global_test_counter += 1
 
 if __name__ == "__main__":
