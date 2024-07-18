@@ -72,7 +72,8 @@ class ArangoView(views.APIView):
 class ServerInfoView(generics.GenericAPIView, ArangoView):
     @extend_schema_serializer(many=False)
     @extend_schema(responses={200:ServerInfoSerializer, **serializers.TaxiiErrorSerializer.error_responses(401, 403, 404, 406)}, operation_id='discover', tags=open_api_schemas.OpenApiTags.API_ROOT.tags, summary="Get information about the TAXII Server and available API Roots", description=textwrap.dedent("""
-        This Endpoint provides general information about a TAXII Server, including the advertised API Roots. It's a common entry point for TAXII Clients into the data and services provided by a TAXII Server. For example, clients auto-discovering TAXII Servers via the DNS SRV record will be able to automatically retrieve a discovery response for that server by requesting the `/taxii2/` path on that domain.
+        This Endpoint provides general information about a TAXII Server, including the advertised API Roots. It's a common entry point for TAXII Clients into the data and services provided by a TAXII Server. For example, clients auto-discovering TAXII Servers via the DNS SRV record will be able to automatically retrieve a discovery response for that server by requesting the `/taxii2/` path on that domain.\n\n
+        If your request fails authentication then you will get a HTTP 401 (Unauthorized) error. Assuming your authentication details are correct, you will see a HTTP 200 (Success) response. If the API Roots list is empty, it means your user has no access to any API Roots on this server.
         """))
     def get(self, request: Request):
         base_url = urljoin(conf.server_host_path, request._request.get_full_path(False))
@@ -87,7 +88,8 @@ class ServerInfoView(generics.GenericAPIView, ArangoView):
 class ApiRootView(ArangoView, viewsets.ViewSet):
     lookup_url_kwarg = "api_root"
     @extend_schema(responses={200: serializers.APIRootSerializer(many=False), **serializers.TaxiiErrorSerializer.error_responses(401, 403, 404, 406)}, operation_id='api_root_retrieve', tags=open_api_schemas.OpenApiTags.API_ROOT.tags, summary="Get information about a specific API Root", description=textwrap.dedent("""
-        This Endpoint provides general information about an API Root, which can be used to help users and clients decide whether and how they want to interact with it. Multiple API Roots may be hosted on a single TAXII Server. Often, an API Root represents a single trust group.
+        This Endpoint provides general information about an API Root, which can be used to help users and clients decide whether and how they want to interact with it. Multiple API Roots may be hosted on a single TAXII Server. Often, an API Root represents a single trust group.\n\n
+        If your request fails authentication then you will get a HTTP 401 (Unauthorized) error. If you are not authorized to view this API Root and/or `status_id`, or if either does not exist you will get a HTTP 404 (Not Found) error.
         """))
     def list(self, request:Request, api_root=None):
         db: arango_helper.ArangoSession =  request.user.arango_session
@@ -99,7 +101,8 @@ class ApiRootView(ArangoView, viewsets.ViewSet):
 class StatusView(ArangoView, viewsets.ViewSet):
     lookup_url_kwarg = 'status_id'
     @extend_schema(tags=open_api_schemas.OpenApiTags.API_ROOT.tags, responses={200: serializers.TaxiiStatusSerializer, **serializers.TaxiiErrorSerializer.error_responses(401, 403, 404, 406)}, summary="Get the status of a job by API root", description=textwrap.dedent("""
-        This Endpoint provides information about the status of a previous request. In TAXII 2.1, the only request that can be monitored is one to add objects to a Collection. It is typically used by TAXII Clients to monitor a POST request that they made in order to take action when it is complete.
+        This Endpoint provides information about the status of a previous request. In TAXII 2.1, the only request that can be monitored is one to add objects to a Collection. It is typically used by TAXII Clients to monitor a POST request that they made in order to take action when it is complete.\n\n
+        If your request fails authentication then you will get a HTTP 401 (Unauthorized) error. If you are not authorized to view this API Root, or it does not exist you will get a HTTP 404 (Not Found) error.
         """))
     def retrieve(self, request, status_id=None, api_root=None):
         return get_status(status_id)
@@ -197,7 +200,7 @@ class ObjectView(ArangoView, viewsets.ViewSet):
         return self.pagination_class.get_paginated_response(objects.result, objects)
 
     @extend_schema("taxii2_collections_objects_retrieve_envelope", tags=open_api_schemas.OpenApiTags.COLLECTIONS.tags, summary="Get a specific object from a collection", parameters=open_api_schemas.SingleObjectQueryParams, responses={200: open_api_schemas.StixObject, **serializers.TaxiiErrorSerializer.error_responses()}, description=textwrap.dedent("""
-        This Endpoint gets an object from a Collection by its id. It can be thought of as a search where the `match[id]` parameter is set to the `{object-id}` in the path. The `{object-id}` MUST be the STIX id.\n\n
+        This Endpoint gets an object from a Collection by its id. It can be thought of as a search where the `match[id]` parameter is set to the `object_id` in the path. The `object_id` MUST be the STIX id.\n\n
         If your request fails authentication then you will get a HTTP 401 (Unauthorized) error. If you are not authorized to view this API Root, or either the API Root and/or Collection does not exist you will get a HTTP 404 (Not Found) error. If the Collection you are trying to access specifies `can_read` as `false` for your authenticated user you will get a HTTP 403 (Forbidden) error.
         """))
     def retrieve(self, request:Request, api_root="", collection_id="", object_id=""):
@@ -214,7 +217,7 @@ class ObjectView(ArangoView, viewsets.ViewSet):
         return self.pagination_class.get_paginated_response([x["version"] for x in objects.result], objects)
 
     @extend_schema(parameters=open_api_schemas.ObjectDeleteParams, tags=open_api_schemas.OpenApiTags.COLLECTIONS.tags, summary="Delete a specific object from a collection", responses={(200, TaxiiJSONRenderer.media_type):open_api_schemas.OpenApiTypes.NONE, **serializers.TaxiiErrorSerializer.error_responses()}, description=textwrap.dedent("""
-        This Endpoint deletes an object from a Collection by its id. The `{object-id}` MUST be the STIX id. To support removing a particular version of an object, this Endpoint supports filtering. The only valid match parameter is `version`. If no filters are applied, all versions of the object will be deleted.\n\n
+        This Endpoint deletes an object from a Collection by its id. The `object_id` MUST be the STIX id. To support removing a particular version of an object, this Endpoint supports filtering. The only valid match parameter is `version`. If no filters are applied, all versions of the object will be deleted.\n\n
         If your request fails authentication then you will get a HTTP 401 (Unauthorized) error. If you are not authorized to view this API Root, or either the API Root and/or Collection does not exist you will get a HTTP 404 (Not Found) error. If the Collection you are trying to add an object to specifies `can_write` as `false` for your authenticated user you will get a HTTP 403 (Forbidden) error.
         """))
     def destroy(self, request:Request, api_root="", collection_id="", object_id=""):
