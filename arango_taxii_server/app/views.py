@@ -158,6 +158,8 @@ class ObjectView(ArangoView, viewsets.ViewSet):
     def pagination_class(self):
         if self.action == 'versions':
             return TaxiiEnvelope("versions")
+        elif self.action == 'destroy':
+            return None
         return TaxiiEnvelope("objects")
     
     def get_serializer_class(self):
