@@ -183,13 +183,13 @@ class NoAccessUser(unittest.TestCase):
             self.check_response_headers(response)
             self.assertEqual(response.status_code, 403, f"Expected 403, got {response.status_code}")
 
-    def test_14_get_status(self):
+    def test_14_get_status(self): # 404 because this status should not exist
         for api_root in API_ROOT:
             url = URL_STATUS.replace("{API_ROOT}", api_root).replace("{STATUS_ID}", DUMMY_STATUS_ID)
             response = requests.get(url, headers=self.headers)
             self.log_response(url, self.headers, response, auth="no_access_user")
             self.check_response_headers(response)
-            self.assertEqual(response.status_code, 403, f"Expected 403, got {response.status_code}")
+            self.assertEqual(response.status_code, 404, f"Expected 404, got {response.status_code}")
 
 if __name__ == "__main__":
     unittest.main()
