@@ -4,10 +4,12 @@ from django.db import models
 
 APP_NAME = "arango_taxii_server"
 
+
 class Status(models.TextChoices):
     PENDING = "pending"
     COMPLETE = "complete"
     FAILED = "failed"
+
 
 class UploadTask(models.Model):
     id = models.UUIDField(primary_key=True)
@@ -22,7 +24,7 @@ class UploadTask(models.Model):
 
     def get_pendings(self):
         return self.uploads.filter(status=Status.PENDING)
-    
+
     def get_pending_count(self):
         return self.uploads.filter(status=Status.PENDING).count()
 
@@ -43,13 +45,18 @@ class UploadTask(models.Model):
             return Status.PENDING
         return Status.COMPLETE
 
+
 class ObjectStatus(models.Model):
     stix_id = models.CharField(blank=False, null=False, max_length=160)
     created = models.DateTimeField(null=True)
     modified = models.DateTimeField(null=True)
     message = models.CharField(max_length=256, null=True, blank=True)
-    status = models.CharField(choices=Status.choices, max_length=12, default=Status.PENDING, null=False)
-    task = models.ForeignKey(UploadTask, on_delete=models.CASCADE, related_name="uploads")
+    status = models.CharField(
+        choices=Status.choices, max_length=12, default=Status.PENDING, null=False
+    )
+    task = models.ForeignKey(
+        UploadTask, on_delete=models.CASCADE, related_name="uploads"
+    )
     stix_data_json = models.CharField(max_length=10_000)
 
     def get_version(self):

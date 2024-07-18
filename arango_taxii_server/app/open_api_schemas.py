@@ -43,7 +43,7 @@ StixType = {
     "minLength": 3,
     "maxLength": 250,
     "description": "The type property identifies the type of STIX Object (SDO, Relationship Object, etc). The value of the type field MUST be one of the types defined by a STIX Object (e.g., `indicator`).",
-    "example": "ipv6-addr"
+    "example": "ipv6-addr",
 }
 
 
@@ -85,11 +85,17 @@ TaxiiMatchType = {
 }
 
 
-added_after_query = OpenApiParameter("added_after", type=Datetime, description=dedent("""
+added_after_query = OpenApiParameter(
+    "added_after",
+    type=Datetime,
+    description=dedent(
+        """
     A single timestamp that filters objects to only include those objects added after the specified timestamp. This filter considers the `modified` time in an object if exists, else it considers the stix2arango `_record_modified` time. The value of this parameter is a timestamp. In the format `YYYY-MM-DDThh:mm:ss.sssZ`
-    """))
+    """
+    ),
+)
 limit_query = OpenApiParameter(
-   TaxiiEnvelope.page_size_query_param,
+    TaxiiEnvelope.page_size_query_param,
     type=int,
     description=dedent(
         """
@@ -192,52 +198,80 @@ ObjectDeleteParams = [
     match_spec_version_query,
 ]
 
+
 class ArangoTaxiiOpenApiExample(OpenApiExample):
     def __init__(self, *args, **kwargs):
-        kwargs['media_type'] = conf.taxii_type
+        kwargs["media_type"] = conf.taxii_type
         super().__init__(*args, **kwargs)
+
 
 class OpenApiTags(Enum):
     API_ROOT = {
         "name": "Taxii API - Server Information",
-        "description": dedent("""
+        "description": dedent(
+            """
         Information about this TAXII Server, the available API Roots, and to retrieve the status of requests.
-        """)
+        """
+        ),
     }
     COLLECTIONS = {
         "name": "Taxii API - Collections",
-        "description": dedent("""
+        "description": dedent(
+            """
         Collections are hosted in the context of an API Root. Each API Root MAY have zero or more Collections. As with other TAXII Endpoints, the ability of TAXII Clients to read from and write to Collections can be restricted depending on their permissions level.
-        """)
+        """
+        ),
     }
     SCHEMA = {
         "name": "schema",
-        "description": dedent("""
+        "description": dedent(
+            """
         Export the TAXII schema to use in other tooling.
-        """)
+        """
+        ),
     }
 
     @property
     def tags(self):
-        return [self.value['name']]
+        return [self.value["name"]]
 
     @classmethod
     def all(cls):
         return [v.value for v in cls.__members__.values()]
 
-from drf_spectacular.settings import spectacular_settings
-spectacular_settings.apply_patches({'TAGS': OpenApiTags.all()})
 
+from drf_spectacular.settings import spectacular_settings
+
+spectacular_settings.apply_patches({"TAGS": OpenApiTags.all()})
 
 
 class CustomAutoSchema(AutoSchema):
-    global_params = [
-    ]
+    global_params = []
     url_path_params = {
-        'collection_id': OpenApiParameter('collection_id', type=str, location=OpenApiParameter.PATH, description="The identifier of the Collection being requested. You can get a Collection ID from the GET Collections for an API Root endpoint."),
-        'api_root': OpenApiParameter('api_root', type=str, location=OpenApiParameter.PATH, description="The API Root name. Do not include the full URL. e.g. use `my_api_root` NOT `http://127.0.0.1:8000/api/taxii2/my_api_root/`"),
-        'object_id': OpenApiParameter('object_id', type=str, location=OpenApiParameter.PATH, description="The STIX ID of the object being requested. e.g. `indicator--00ee0481-1b16-4c0c-a0e6-43f51d172a81`. You can search for objects using the GET objects in a Collection endpoint."),
-        'status_id': OpenApiParameter('status_id', type=OpenApiTypes.UUID, location=OpenApiParameter.PATH, description="The status ID of the job being requested. The status ID is obtained in a successful response from the POST objects endpoint."),
+        "collection_id": OpenApiParameter(
+            "collection_id",
+            type=str,
+            location=OpenApiParameter.PATH,
+            description="The identifier of the Collection being requested. You can get a Collection ID from the GET Collections for an API Root endpoint.",
+        ),
+        "api_root": OpenApiParameter(
+            "api_root",
+            type=str,
+            location=OpenApiParameter.PATH,
+            description="The API Root name. Do not include the full URL. e.g. use `my_api_root` NOT `http://127.0.0.1:8000/api/taxii2/my_api_root/`",
+        ),
+        "object_id": OpenApiParameter(
+            "object_id",
+            type=str,
+            location=OpenApiParameter.PATH,
+            description="The STIX ID of the object being requested. e.g. `indicator--00ee0481-1b16-4c0c-a0e6-43f51d172a81`. You can search for objects using the GET objects in a Collection endpoint.",
+        ),
+        "status_id": OpenApiParameter(
+            "status_id",
+            type=OpenApiTypes.UUID,
+            location=OpenApiParameter.PATH,
+            description="The status ID of the job being requested. The status ID is obtained in a successful response from the POST objects endpoint.",
+        ),
     }
 
     def get_override_parameters(self):
@@ -247,16 +281,16 @@ class CustomAutoSchema(AutoSchema):
                 params.append(param)
         if "taxii2/" not in self.path:
             return params
-        
+
         return params + self.global_params
 
     def _is_list_view(self, *args, **kwargs):
-        if getattr(self.view, 'pagination_class', None):
+        if getattr(self.view, "pagination_class", None):
             return True
         return False
-    
+
     def map_renderers(self, attribute: str) -> list[Any]:
-        assert attribute in ['media_type', 'format']
+        assert attribute in ["media_type", "format"]
 
         # Either use whitelist or default back to old behavior by excluding BrowsableAPIRenderer
         def use_renderer(r):
@@ -264,15 +298,16 @@ class CustomAutoSchema(AutoSchema):
                 return whitelisted(r, spectacular_settings.RENDERER_WHITELIST)
             else:
                 return not isinstance(r, renderers.BrowsableAPIRenderer)
+
         keys = []
         for r in self.view.get_renderers():
             if use_renderer(r) and hasattr(r, attribute):
                 media_type = getattr(r, attribute)
                 keys.append(media_type)
-        
+
         return keys
-    
-    
+
+
 class ArangoServerAuthenticationScheme(OpenApiAuthenticationExtension):
     target_class = ArangoServerAuthentication
     name = "ArangoBasicAuth"
