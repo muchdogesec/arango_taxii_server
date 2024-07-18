@@ -222,5 +222,5 @@ class ObjectView(ArangoView, viewsets.ViewSet):
         """))
     def destroy(self, request:Request, api_root="", collection_id="", object_id=""):
         db: arango_helper.ArangoSession =  request.user.arango_session
-        db.remove_object(api_root, collection_id, object_id, match_version=request.query_params.get('match[version]'))
+        db.remove_object(api_root, collection_id, object_id, match_version=request.query_params.get('match[version]', ""), match_spec_version=request.query_params.get('match[spec_version]', ""))
         return Response()

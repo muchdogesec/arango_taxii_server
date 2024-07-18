@@ -155,18 +155,20 @@ class ArangoSession:
 
         return resp
 
-    def remove_object(self, db_name, collection, object_id, match_version=None):
+    def remove_object(self, db_name, collection, object_id, match_version=None, match_spec_version=""):
         vertex, edge = f"{collection}_vertex_collection", f"{collection}_edge_collection"
 
         AQL = """
         LET vertices = (
             FOR doc in @@vertex_collection
                 FILTER doc.id == @object_id
+                FILTER CONTAINS(@spec_versions, doc.spec_version) OR LENGTH(@spec_versions) == 0
                 RETURN {type: "vertex", _key: doc._key, modified: doc.modified}
         )
         LET edges = (
             FOR doc in @@edge_collection
                 FILTER doc.id == @object_id
+                FILTER CONTAINS(@spec_versions, doc.spec_version) OR LENGTH(@spec_versions) == 0
                 RETURN {type: "edge", _key: doc._key, modified: doc.modified}
         )
 
@@ -174,7 +176,7 @@ class ArangoSession:
         RETURN doc
         """
         url = urljoin(self.HOST_URL, f"/_db/{db_name}/_api/cursor/")
-        resp = self.parse_response(self.session.post(url, json=dict(query=AQL, bindVars={"object_id":object_id, "@vertex_collection": vertex, "@edge_collection": edge})))
+        resp = self.parse_response(self.session.post(url, json=dict(query=AQL, bindVars={"object_id":object_id, "@vertex_collection": vertex, "@edge_collection": edge, "spec_versions": match_spec_version.split(",")})))
         
         versions = (match_version or "all").split(",")
         objects_to_remove = []
@@ -279,6 +281,12 @@ class ArangoSession:
             FILTER CONTAINS(@match_id, doc.id)
             """
             binding['match_id'] = match_id.split(',')
+
+        if match_spec_version := query_params.get("match[spec_version]"):
+            AQL += """
+            FILTER CONTAINS(@spec_versions, doc.spec_version) OR LENGTH(@spec_versions) == 0
+            """
+            binding['spec_versions'] = match_spec_version.split(',')
         
         AQL += """
         /* START ---- make sure only one id, modified time pair ----- */
