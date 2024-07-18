@@ -64,7 +64,7 @@ class NoAccessUser(unittest.TestCase):
             response = requests.get(url, headers=self.headers)
             self.log_response(url, self.headers, response, auth="no_access_user")
             self.check_response_headers(response)
-            self.assertEqual(response.status_code, 403, f"Expected 403, got {response.status_code}")
+            self.assertEqual(response.status_code, 404, f"Expected 404, got {response.status_code}")
 
     def test_04_get_collections_list(self):
         for api_root in API_ROOT:
@@ -72,7 +72,7 @@ class NoAccessUser(unittest.TestCase):
             response = requests.get(url, headers=self.headers)
             self.log_response(url, self.headers, response, auth="no_access_user")
             self.check_response_headers(response)
-            self.assertEqual(response.status_code, 403, f"Expected 403, got {response.status_code}")
+            self.assertEqual(response.status_code, 404, f"Expected 404, got {response.status_code}")
 
     def test_05_get_collection(self):
         for api_root in API_ROOT:
@@ -81,7 +81,7 @@ class NoAccessUser(unittest.TestCase):
                 response = requests.get(url, headers=self.headers)
                 self.log_response(url, self.headers, response, auth="no_access_user")
                 self.check_response_headers(response)
-                self.assertEqual(response.status_code, 403, f"Expected 403, got {response.status_code}")
+                self.assertEqual(response.status_code, 404, f"Expected 404, got {response.status_code}")
 
     def test_06_get_collection_manifest(self):
         for api_root in API_ROOT:
@@ -90,7 +90,7 @@ class NoAccessUser(unittest.TestCase):
                 response = requests.get(url, headers=REQUEST_HEADERS_MANIFEST)
                 self.log_response(url, REQUEST_HEADERS_MANIFEST, response, auth="no_access_user")
                 self.check_response_headers(response)
-                self.assertEqual(response.status_code, 403, f"Expected 403, got {response.status_code}")
+                self.assertEqual(response.status_code, 404, f"Expected 404, got {response.status_code}")
 
     def test_07_get_collection_objects(self):
         for api_root in API_ROOT:
@@ -99,7 +99,7 @@ class NoAccessUser(unittest.TestCase):
                 response = requests.get(url, headers=self.headers)
                 self.log_response(url, self.headers, response, auth="no_access_user")
                 self.check_response_headers(response)
-                self.assertEqual(response.status_code, 403, f"Expected 403, got {response.status_code}")
+                self.assertEqual(response.status_code, 404, f"Expected 404, got {response.status_code}")
 
     def test_08_post_collection_objects(self):
         api_root = "arango_taxii_server_tests_database"
@@ -110,7 +110,7 @@ class NoAccessUser(unittest.TestCase):
         response = requests.post(url, headers=self.headers, json=data)
         self.log_response(url, self.headers, response, auth="no_access_user", request_body=data)
         self.check_response_headers(response)
-        self.assertEqual(response.status_code, 403, f"Expected 403, got {response.status_code}")
+        self.assertEqual(response.status_code, 404, f"Expected 404, got {response.status_code}")
 
     def test_09_verify_post_collection_objects(self):
         api_root = "arango_taxii_server_tests_database"
@@ -137,7 +137,7 @@ class NoAccessUser(unittest.TestCase):
             response = requests.get(url, headers=self.headers)
             self.log_response(url, self.headers, response, auth="no_access_user")
             self.check_response_headers(response)
-            self.assertEqual(response.status_code, 403, f"Expected 403, got {response.status_code}")
+            self.assertEqual(response.status_code, 404, f"Expected 404, got {response.status_code}")
 
     def test_11_delete_object(self):
         api_root = "arango_taxii_server_tests_database"
@@ -151,7 +151,7 @@ class NoAccessUser(unittest.TestCase):
             response = requests.delete(url, headers=self.headers)
             self.log_response(url, self.headers, response, auth="no_access_user")
             self.check_response_headers(response)
-            self.assertEqual(response.status_code, 403, f"Expected 403, got {response.status_code}")
+            self.assertEqual(response.status_code, 404, f"Expected 404, got {response.status_code}")
 
     def test_12_verify_delete_object(self):
         api_root = "arango_taxii_server_tests_database"
@@ -181,7 +181,7 @@ class NoAccessUser(unittest.TestCase):
             response = requests.get(url, headers=self.headers)
             self.log_response(url, self.headers, response, auth="no_access_user")
             self.check_response_headers(response)
-            self.assertEqual(response.status_code, 403, f"Expected 403, got {response.status_code}")
+            self.assertEqual(response.status_code, 404, f"Expected 404, got {response.status_code}")
 
     def test_14_get_status(self): # 404 because this status should not exist
         for api_root in API_ROOT:

@@ -337,7 +337,7 @@ class TestReadUser(unittest.TestCase):
             response = requests.get(url, headers=self.headers)
             self.log_response(self.global_test_counter, url, self.headers, response, auth="read_user", method="GET")
             self.check_response_headers(response)
-            self.assertEqual(response.status_code, 403, f"Expected 403, got {response.status_code}")
+            self.assertEqual(response.status_code, 404, f"Expected 404, got {response.status_code}")
             self.global_test_counter += 1
 
 if __name__ == "__main__":

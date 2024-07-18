@@ -89,7 +89,7 @@ class ApiRootView(ArangoView, viewsets.ViewSet):
     lookup_url_kwarg = "api_root"
     @extend_schema(responses={200: serializers.APIRootSerializer(many=False), **serializers.TaxiiErrorSerializer.error_responses(401, 403, 404, 406)}, operation_id='api_root_retrieve', tags=open_api_schemas.OpenApiTags.API_ROOT.tags, summary="Get information about a specific API Root", description=textwrap.dedent("""
         This Endpoint provides general information about an API Root, which can be used to help users and clients decide whether and how they want to interact with it. Multiple API Roots may be hosted on a single TAXII Server. Often, an API Root represents a single trust group.\n\n
-        If your request fails authentication then you will get a HTTP 401 (Unauthorized) error. If you are not authorized to view this API Root and/or `status_id`, or if either does not exist you will get a HTTP 404 (Not Found) error.
+        If your request fails authentication then you will get a HTTP 401 (Unauthorized) error.  If you are not authorized to view this API Root, or it does not exist you will get a HTTP 404 (Not Found) error.
         """))
     def list(self, request:Request, api_root=None):
         db: arango_helper.ArangoSession =  request.user.arango_session
@@ -102,7 +102,7 @@ class StatusView(ArangoView, viewsets.ViewSet):
     lookup_url_kwarg = 'status_id'
     @extend_schema(tags=open_api_schemas.OpenApiTags.API_ROOT.tags, responses={200: serializers.TaxiiStatusSerializer, **serializers.TaxiiErrorSerializer.error_responses(401, 403, 404, 406)}, summary="Get the status of a job by API root", description=textwrap.dedent("""
         This Endpoint provides information about the status of a previous request. In TAXII 2.1, the only request that can be monitored is one to add objects to a Collection. It is typically used by TAXII Clients to monitor a POST request that they made in order to take action when it is complete.\n\n
-        If your request fails authentication then you will get a HTTP 401 (Unauthorized) error. If you are not authorized to view this API Root, or it does not exist you will get a HTTP 404 (Not Found) error.
+        If your request fails authentication then you will get a HTTP 401 (Unauthorized) error. If you are not authorized to view this API Root and/or `status_id`, or if either does not exist you will get a HTTP 404 (Not Found) error.
         """))
     def retrieve(self, request, status_id=None, api_root=None):
         return get_status(status_id)
