@@ -177,7 +177,7 @@ class TaxiiStatusSerializer(serializers.ModelSerializer):
         child=TaxxiiStatusObjectField(), required=False, source="get_pendings"
     )
     username = serializers.CharField(write_only=True, required=False)
-    password = serializers.CharField(write_only=True, required=False)
+    password = serializers.CharField(write_only=True, required=False, allow_blank=True)
     db = serializers.CharField(write_only=True, required=False)
     collection = serializers.CharField(write_only=True, required=False)
 

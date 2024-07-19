@@ -15,7 +15,7 @@ class UploadTask(models.Model):
     id = models.UUIDField(primary_key=True)
     request_timestamp = models.DateTimeField(auto_now_add=True, blank=True)
     username = models.CharField(max_length=64)
-    password = models.CharField(max_length=64)
+    password = models.CharField(max_length=64, blank=True)
     db = models.CharField(max_length=64)
     collection = models.CharField(max_length=256)
 
