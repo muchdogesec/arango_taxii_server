@@ -125,7 +125,7 @@ class ServerInfoView(generics.GenericAPIView, ArangoView):
         description=textwrap.dedent(
             """
         This Endpoint provides general information about a TAXII Server, including the advertised API Roots. It's a common entry point for TAXII Clients into the data and services provided by a TAXII Server. For example, clients auto-discovering TAXII Servers via the DNS SRV record will be able to automatically retrieve a discovery response for that server by requesting the `/taxii2/` path on that domain.\n\n
-        If your request fails authentication then you will get a HTTP 401 (Unauthorized) error. Assuming your authentication details are correct, you will see a HTTP 200 (Success) response. If the API Roots list is empty, it means your user has no access to any API Roots on this server.
+        If no authorization header is passed then you will get a 401 (Unauthorized) error. If your request fails authentication then you will get a HTTP 404 (Not found) error. Assuming your authentication details are correct, you will see a HTTP 200 (Success) response. If the API Roots list is empty, it means your user has no access to any API Roots on this server.
         """
         ),
     )
@@ -158,7 +158,7 @@ class ApiRootView(ArangoView, viewsets.ViewSet):
         description=textwrap.dedent(
             """
         This Endpoint provides general information about an API Root, which can be used to help users and clients decide whether and how they want to interact with it. Multiple API Roots may be hosted on a single TAXII Server. Often, an API Root represents a single trust group.\n\n
-        If your request fails authentication then you will get a HTTP 401 (Unauthorized) error.  If you are not authorized to view this API Root, or it does not exist you will get a HTTP 404 (Not Found) error.
+        If no authorization header is passed then you will get a 401 (Unauthorized) error. If your request fails authentication then you will get a HTTP 404 (Not found) error.  If you are not authorized to view this API Root, or it does not exist you will get a HTTP 404 (Not Found) error.
         """
         ),
     )
@@ -186,7 +186,7 @@ class StatusView(ArangoView, viewsets.ViewSet):
         description=textwrap.dedent(
             """
         This Endpoint provides information about the status of a previous request. In TAXII 2.1, the only request that can be monitored is one to add objects to a Collection. It is typically used by TAXII Clients to monitor a POST request that they made in order to take action when it is complete.\n\n
-        If your request fails authentication then you will get a HTTP 401 (Unauthorized) error. If you are not authorized to view this API Root and/or `status_id`, or if either does not exist you will get a HTTP 404 (Not Found) error.
+        If no authorization header is passed then you will get a 401 (Unauthorized) error. If your request fails authentication then you will get a HTTP 404 (Not found) error. If you are not authorized to view this API Root and/or `status_id`, or if either does not exist you will get a HTTP 404 (Not Found) error.
         """
         ),
     )
@@ -224,7 +224,7 @@ class CollectionView(ArangoView, viewsets.ViewSet):
         description=textwrap.dedent(
             """
         This Endpoint provides information about the Collections hosted under this API Root. This is similar to the response to get a Collection, but rather than providing information about one Collection it provides information about all of the Collections. Most importantly, it provides the Collection's id, which is used to request objects or manifest entries from the Collection.\n\n
-        If your request fails authentication then you will get a HTTP 401 (Unauthorized) error. If you are not authorized to view this API Root, or it does not exist you will get a HTTP 404 (Not Found) error.
+        If no authorization header is passed then you will get a 401 (Unauthorized) error. If your request fails authentication then you will get a HTTP 404 (Not found) error. If you are not authorized to view this API Root, or it does not exist you will get a HTTP 404 (Not Found) error.
         """
         ),
     )
@@ -245,7 +245,7 @@ class CollectionView(ArangoView, viewsets.ViewSet):
         description=textwrap.dedent(
             """
         This Endpoint provides general information about a Collection, which can be used to help users and clients decide whether and how they want to interact with it. For example, it will tell clients what it's called and what permissions they have to it.\n\n
-        If your request fails authentication then you will get a HTTP 401 (Unauthorized) error. If you are not authorized to view this API Root, or either the API Root and/or Collection does not exist you will get a HTTP 404 (Not Found) error.
+        If no authorization header is passed then you will get a 401 (Unauthorized) error. If your request fails authentication then you will get a HTTP 404 (Not found) error. If you are not authorized to view this API Root, or either the API Root and/or Collection does not exist you will get a HTTP 404 (Not Found) error.
         """
         ),
     )
@@ -267,7 +267,7 @@ class CollectionView(ArangoView, viewsets.ViewSet):
         description=textwrap.dedent(
             """
         This Endpoint retrieves a manifest about the objects in a Collection. It supports filtering identical to the get objects Endpoint but rather than returning the object itself it returns metadata about the object. It can be used to retrieve metadata to decide whether it's worth retrieving the actual objects.\n\n
-        If your request fails authentication then you will get a HTTP 401 (Unauthorized) error. If you are not authorized to view this API Root, or either the API Root and/or Collection does not exist you will get a HTTP 404 (Not Found) error. If the Collection you are trying to access specifies `can_read` as `false` for your authenticated user you will get a HTTP 403 (Forbidden) error.
+        If no authorization header is passed then you will get a 401 (Unauthorized) error. If your request fails authentication then you will get a HTTP 404 (Not found) error. If you are not authorized to view this API Root, or either the API Root and/or Collection does not exist you will get a HTTP 404 (Not Found) error. If the Collection you are trying to access specifies `can_read` as `false` for your authenticated user you will get a HTTP 403 (Forbidden) error.
         """
         ),
     )
@@ -324,7 +324,7 @@ class ObjectView(ArangoView, viewsets.ViewSet):
         description=textwrap.dedent(
             """
         This Endpoint adds objects to a Collection. Successful responses to this Endpoint will contain a status resource describing the status of the request. The status resource contains an id, which can be used to make requests to the get status Endpoint, a status flag to indicate whether the request is completed or still being processed, and information about the status of the particular objects in the request.\n\n
-        If your request fails authentication then you will get a HTTP 401 (Unauthorized) error. If you are not authorized to view this API Root, or either the API Root and/or Collection does not exist you will get a HTTP 404 (Not Found) error. If the Collection you are trying to add an object to specifies `can_write` as `false` for your authenticated user you will get a HTTP 403 (Forbidden) error.
+        If no authorization header is passed then you will get a 401 (Unauthorized) error. If your request fails authentication then you will get a HTTP 404 (Not found) error. If you are not authorized to view this API Root, or either the API Root and/or Collection does not exist you will get a HTTP 404 (Not Found) error. If the Collection you are trying to add an object to specifies `can_write` as `false` for your authenticated user you will get a HTTP 403 (Forbidden) error.
         """
         ),
     )
@@ -383,7 +383,7 @@ class ObjectView(ArangoView, viewsets.ViewSet):
         description=textwrap.dedent(
             """
         This Endpoint retrieves objects from a Collection. Clients can search for objects in the Collection, retrieve all objects in a Collection, or paginate through objects in the Collection. Pagination is supported by the `limit` URL query parameter and the `more` property of the envelope.\n\n
-        If your request fails authentication then you will get a HTTP 401 (Unauthorized) error. If you are not authorized to view this API Root, or either the API Root and/or Collection does not exist you will get a HTTP 404 (Not Found) error. If the Collection you are trying to access specifies `can_read` as `false` for your authenticated user you will get a HTTP 403 (Forbidden) error.
+        If no authorization header is passed then you will get a 401 (Unauthorized) error. If your request fails authentication then you will get a HTTP 404 (Not found) error. If you are not authorized to view this API Root, or either the API Root and/or Collection does not exist you will get a HTTP 404 (Not Found) error. If the Collection you are trying to access specifies `can_read` as `false` for your authenticated user you will get a HTTP 403 (Forbidden) error.
         """
         ),
         responses={
@@ -413,7 +413,7 @@ class ObjectView(ArangoView, viewsets.ViewSet):
         description=textwrap.dedent(
             """
         This Endpoint gets an object from a Collection by its id. It can be thought of as a search where the `match[id]` parameter is set to the `object_id` in the path. The `object_id` MUST be the STIX id.\n\n
-        If your request fails authentication then you will get a HTTP 401 (Unauthorized) error. If you are not authorized to view this API Root, or either the API Root and/or Collection does not exist you will get a HTTP 404 (Not Found) error. If the Collection you are trying to access specifies `can_read` as `false` for your authenticated user you will get a HTTP 403 (Forbidden) error.
+        If no authorization header is passed then you will get a 401 (Unauthorized) error. If your request fails authentication then you will get a HTTP 404 (Not found) error. If you are not authorized to view this API Root, or either the API Root and/or Collection does not exist you will get a HTTP 404 (Not Found) error. If the Collection you are trying to access specifies `can_read` as `false` for your authenticated user you will get a HTTP 403 (Forbidden) error.
         """
         ),
     )
@@ -433,7 +433,7 @@ class ObjectView(ArangoView, viewsets.ViewSet):
         description=textwrap.dedent(
             """
         This Endpoint retrieves a list of one or more versions of an object in a Collection. This list can be used to decide whether it's worth retrieving the actual objects, or if new versions have been added. If a STIX object is not versioned (and therefore does not have a `modified` timestamp), the server uses the stix2atango `_record_modified` timestamp.\n\n
-        If your request fails authentication then you will get a HTTP 401 (Unauthorized) error. If you are not authorized to view this API Root, or either the API Root and/or Collection does not exist you will get a HTTP 404 (Not Found) error. If the Collection you are trying to access specifies `can_read` as `false` for your authenticated user you will get a HTTP 403 (Forbidden) error.
+        If no authorization header is passed then you will get a 401 (Unauthorized) error. If your request fails authentication then you will get a HTTP 404 (Not found) error. If you are not authorized to view this API Root, or either the API Root and/or Collection does not exist you will get a HTTP 404 (Not Found) error. If the Collection you are trying to access specifies `can_read` as `false` for your authenticated user you will get a HTTP 403 (Forbidden) error.
         """
         ),
     )
@@ -465,7 +465,7 @@ class ObjectView(ArangoView, viewsets.ViewSet):
         description=textwrap.dedent(
             """
         This Endpoint deletes an object from a Collection by its id. The `object_id` MUST be the STIX id. To support removing a particular version of an object, this Endpoint supports filtering. The only valid match parameter is `version`. If no filters are applied, all versions of the object will be deleted.\n\n
-        If your request fails authentication then you will get a HTTP 401 (Unauthorized) error. If you are not authorized to view this API Root, or either the API Root and/or Collection does not exist you will get a HTTP 404 (Not Found) error. If the Collection you are trying to add an object to specifies `can_write` as `false` for your authenticated user you will get a HTTP 403 (Forbidden) error.
+        If no authorization header is passed then you will get a 401 (Unauthorized) error. If your request fails authentication then you will get a HTTP 404 (Not found) error. If you are not authorized to view this API Root, or either the API Root and/or Collection does not exist you will get a HTTP 404 (Not Found) error. If the Collection you are trying to add an object to specifies `can_write` as `false` for your authenticated user you will get a HTTP 403 (Forbidden) error.
         """
         ),
     )
