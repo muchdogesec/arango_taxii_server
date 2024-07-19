@@ -153,18 +153,12 @@ class ArangoSession:
         url = urljoin(self.HOST_URL, f"/_db/{db_name}/_api/cursor/")
         payload = None
         if next := query_params.get("next"):
-            cursor_id, batch_id = next.split("_")
-            url = urljoin(url, cursor_id)
-        else:
-            payload = self.build_query(collection_id, query_params, query_type)
+            cursor_id, added_after = next.split("_")
+            query_params['added_after'] = added_after
+        #     url = urljoin(url, cursor_id)
+        # else:
+        payload = self.build_query(collection_id, query_params, query_type)
         resp = self.parse_response(self.session.post(url, json=payload))
-        if resp.dict.get("hasMore"):
-            resp.dict["next"] = (
-                f"{resp.dict['id']}_{resp.dict.get('nextBatchId', f'undef+{random.random()}')}"
-            )
-
-        # if query_type == 'versions':
-        #     resp.result = [x["modified"] for x in resp.result]
 
         # delete _record_modified and add set first and last dates
         if resp.result:
@@ -178,6 +172,11 @@ class ArangoSession:
                     added_last = date_added
                 del r["_record_modified"]
             resp.dict.update(added_last=added_last, added_first=added_first)
+
+        if resp.dict.get("hasMore"):
+            resp.dict["next"] = (
+                f"{resp.dict['id']}_{resp.dict.get('added_last')}"
+            )
 
         return resp
 
@@ -284,98 +283,88 @@ class ArangoSession:
             )
             binding = {"@vertex_collection": vertex, "@edge_collection": edge}
 
-        AQL = f"""
-            LET documents = {aql_documents_str}
-            FOR doc IN documents
-                FILTER NOT STARTS_WITH(doc.id, "_")
+        collection_query = """
+        FOR doc IN @@collection
+        FILTER doc._record_modified > @added_after
+        // [MORE_FILTERS]
+        SORT doc._record_modified
+        LET versions = MERGE(
+        FOR inner IN @@collection
+        FILTER inner.id == doc.id
+        COLLECT version = inner.modified OR inner.created AGGREGATE createdAt = MAX(inner._record_modified)
+        RETURN {[version]: createdAt}
+        )
+        LET current_version = doc.modified OR doc.created
+        LET all_versions = MERGE(versions, {"first": versions[MIN(KEYS(versions))], "last": versions[MAX(KEYS(versions))]})
+        LET match_version = "all" IN @match_version ? KEYS(versions) : @match_version OR ["last"]
 
+        FILTER LENGTH(
+        FOR v in match_version
+        FILTER doc._record_modified == all_versions[v]
+        RETURN 1
+        )
+        LIMIT @limit
+        RETURN doc
         """
-        retval = {"bindVars": binding}
-        if versions := set(query_params.get("match[version]", "last").split(",")):
-            filters = []
-            if "last" in versions:
-                versions.remove("last")
-                filters.append("id_doc.modified == MAX(docs_by_id[*].doc.modified)")
-            if "first" in versions:
-                versions.remove("first")
-                filters.append("id_doc.modified == MIN(docs_by_id[*].doc.modified)")
-            if versions:
-                filters.append("CONTAINS(SPLIT(@versions,','), id_doc.modified)")
-                binding["versions"] = ",".join(versions)
 
-            if "all" not in versions:
-                aql_filters = "FILTER " + " OR ".join(filters)
-                AQL += f"""
-            COLLECT id = doc.id into docs_by_id
-            RETURN (
-                FOR id_doc in docs_by_id[*].doc
-                {aql_filters}
-                RETURN id_doc
-            )
-                """
-                AQL = f"FOR doc in FLATTEN({AQL})"
-            else:
-                binding.pop("versions", None)
-
-        batchSize = query_params.get("limit", settings.DEFAULT_PAGINATION_LIMIT)
-        retval["batchSize"] = int(batchSize)
-
-        if added_after := query_params.get("added_after"):
-            AQL += """
-            FILTER doc._record_modified > @added_after
-            """
-            binding["added_after"] = added_after
-
+        binding['added_after'] = query_params.get('added_after', '')
+        binding['match_version'] = list(set(query_params.get("match[version]", "last").split(",")))
+        more_filters = []
         if stix_type := query_params.get("match[type]", ""):
-            AQL += """
-            FILTER CONTAINS(@match_type, doc.type)
-            """
+            more_filters.append("CONTAINS(@match_type, doc.type)")
             binding["match_type"] = stix_type.split(",")
 
         if match_id := query_params.get("match[id]"):
-            AQL += """
-            FILTER CONTAINS(@match_id, doc.id)
-            """
+            more_filters.append('CONTAINS(@match_id, doc.id)')
             binding["match_id"] = match_id.split(",")
 
         if match_spec_version := query_params.get("match[spec_version]"):
-            AQL += """
-            FILTER CONTAINS(@spec_versions, doc.spec_version) OR LENGTH(@spec_versions) == 0
-            """
+            more_filters.append("(CONTAINS(@spec_versions, doc.spec_version) OR LENGTH(@spec_versions) == 0)")
             binding["spec_versions"] = match_spec_version.split(",")
 
-        AQL += """
-        /* START ---- make sure only one id, modified time pair ----- */
-        COLLECT d_id = doc.id, d_version = doc.modified INTO grouped
-        LET document = FIRST(
-            FOR d in grouped[*].doc
-            SORT d._record_modified
-            LIMIT 1
-            RETURN d
+        if more_filters:
+            collection_query = collection_query.replace("// [MORE_FILTERS]", "FILTER " + " AND ".join(more_filters))
+
+
+        retval = {"bindVars": binding}
+
+        batchSize = int(query_params.get("limit", settings.DEFAULT_PAGINATION_LIMIT))
+        retval["batchSize"] = batchSize
+        binding['limit'] = batchSize + 1
+
+        AQL = f"""
+        LET vertices = (
+            {collection_query.replace("@@collection", "@@vertex_collection")}
         )
-        /* END ---- make sure only one id, modified time pair ----- */
+        LET edges = (
+            {collection_query.replace("@@collection", "@@edge_collection")}
+        )
 
-        FILTER document.id != NULL
-        SORT document._record_modified ASC
-
+        FOR doc in UNION(vertices, edges)
+        SORT doc._record_modified
+        LIMIT @limit
+        
         """
-        ###
+
+
         if req_type in ["manifest", "versions"]:
             AQL += """
             RETURN { 
-                id: document.id,
-                date_added: document._record_modified,
-                _record_modified: document._record_modified,
-                version: document.modified or document.created,
+                id: doc.id,
+                date_added: doc._record_modified,
+                _record_modified: doc._record_modified,
+                version: doc.modified or doc.created,
             }
             """
         elif req_type == "objects":
             AQL += """
-            RETURN KEEP(document, PUSH(ATTRIBUTES(document, true), "_record_modified"))
+            RETURN KEEP(doc, PUSH(ATTRIBUTES(doc, true), "_record_modified"))
             """
         else:
             raise ArangoError(500, f"unknown request type: {req_type}")
         retval["query"] = AQL
+        # print(json.dumps(binding))
+        # print(AQL)
         return retval
 
     @classmethod
