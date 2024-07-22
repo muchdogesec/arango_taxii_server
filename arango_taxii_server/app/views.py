@@ -4,7 +4,12 @@ from urllib.parse import urljoin
 import uuid
 
 import django.core.exceptions
-from drf_spectacular.utils import extend_schema, extend_schema_serializer
+from drf_spectacular.utils import (
+    extend_schema,
+    extend_schema_serializer,
+    OpenApiResponse,
+    OpenApiExample,
+)
 from rest_framework import (
     decorators,
     generics,
@@ -117,7 +122,12 @@ class ServerInfoView(generics.GenericAPIView, ArangoView):
     @extend_schema(
         responses={
             200: ServerInfoSerializer,
-            **serializers.TaxiiErrorSerializer.error_responses(401, 403, 404, 406),
+            **serializers.TaxiiErrorSerializer.error_responses([
+                (401, "The client needs to authenticate"),
+                (403, "The client does not have access to this resource"),
+                (404, "The Discovery service is not found, or the client does not have access to the resource"),
+                (406, "The media type provided in the Accept header is invalid"),
+            ]),
         },
         operation_id="discover",
         tags=open_api_schemas.OpenApiTags.API_ROOT.tags,
@@ -150,7 +160,12 @@ class ApiRootView(ArangoView, viewsets.ViewSet):
     @extend_schema(
         responses={
             200: serializers.APIRootSerializer(many=False),
-            **serializers.TaxiiErrorSerializer.error_responses(401, 403, 404, 406),
+            **serializers.TaxiiErrorSerializer.error_responses([
+                (401, "The client needs to authenticate"),
+                (403, "The client does not have access to this resource"),
+                (404, "The API Root is not found, or the client does not have access to the resource"),
+                (406, "The media type provided in the Accept header is invalid"),
+            ]),
         },
         operation_id="api_root_retrieve",
         tags=open_api_schemas.OpenApiTags.API_ROOT.tags,
@@ -180,7 +195,12 @@ class StatusView(ArangoView, viewsets.ViewSet):
         tags=open_api_schemas.OpenApiTags.API_ROOT.tags,
         responses={
             200: serializers.TaxiiStatusSerializer,
-            **serializers.TaxiiErrorSerializer.error_responses(401, 403, 404, 406),
+            **serializers.TaxiiErrorSerializer.error_responses([
+                (401, "The client needs to authenticate"),
+                (403, "The client does not have access to this resource"),
+                (404, "The API Root or Status ID are not found, or the client does not have access to the resource"),
+                (406, "The media type provided in the Accept header is invalid"),
+            ]),
         },
         summary="Get the status of a job by API root",
         description=textwrap.dedent(
@@ -219,7 +239,13 @@ class CollectionView(ArangoView, viewsets.ViewSet):
         summary="Get information about all collections",
         responses={
             200: serializers.MultiCollectionSerializer,
-            **serializers.TaxiiErrorSerializer.error_responses(),
+            **serializers.TaxiiErrorSerializer.error_responses([
+                (400, "The server did not understand the request"),
+                (401, "The client needs to authenticate"),
+                (403, "The client does not have access to this collections resource"),
+                (404, "The API Root is not found, or the client does not have access to the collections resource"),
+                (406, "The media type provided in the Accept header is invalid"),
+            ]),
         },
         description=textwrap.dedent(
             """
@@ -238,7 +264,13 @@ class CollectionView(ArangoView, viewsets.ViewSet):
     @extend_schema(
         responses={
             200: serializers.SingleCollectionSerializer,
-            **serializers.TaxiiErrorSerializer.error_responses(),
+            **serializers.TaxiiErrorSerializer.error_responses([
+                (400, "The server did not understand the request"),
+                (401, "The client needs to authenticate"),
+                (403, "The client does not have access to this collection resource"),
+                (404, "The API Root or Collection ID are not found, or the client does not have access to the collection resource"),
+                (406, "The media type provided in the Accept header is invalid"),
+            ]),
         },
         tags=open_api_schemas.OpenApiTags.COLLECTIONS.tags,
         summary="Get information about a specific collection",
@@ -259,7 +291,13 @@ class CollectionView(ArangoView, viewsets.ViewSet):
     @extend_schema(
         responses={
             200: serializers.ManifestObjectSerializer(many=True),
-            **serializers.TaxiiErrorSerializer.error_responses(),
+            **serializers.TaxiiErrorSerializer.error_responses([
+                (400, "The server did not understand the request or filter parameters"),
+                (401, "The client needs to authenticate"),
+                (403, "The client does not have access to this manifest resource"),
+                (404, "The API Root or Collection ID are not found, or the client does not have access to the manifest resource"),
+                (406, "The media type provided in the Accept header is invalid"),
+            ]),
         },
         parameters=open_api_schemas.ObjectsQueryParams,
         tags=open_api_schemas.OpenApiTags.COLLECTIONS.tags,
@@ -316,7 +354,16 @@ class ObjectView(ArangoView, viewsets.ViewSet):
         responses={
             200: serializers.TaxiiStatusSerializer,
             **serializers.TaxiiErrorSerializer.error_responses(
-                400, 401, 403, 404, 406, 413, 415, 422
+                [
+                    (400, "The server did not understand the request"),
+                    (401, "The client needs to authenticate"),
+                    (403, "The client does not have access to write to this objects resource"),
+                    (404, "The API Root or Collection ID are not found, or the client can not write to this objects resource"),
+                    (406, "The media type provided in the Accept header is invalid"),
+                    (413, "The POSTed payload exceeds the max_content_length of the API Root"),
+                    (415, "The client attempted to POST a payload with a content type the server does not support"),
+                    (422, "The object type or version is not supported or could not be processed."),
+                ]
             ),
         },
         request=serializers.ObjectsSerializer,
@@ -388,7 +435,13 @@ class ObjectView(ArangoView, viewsets.ViewSet):
         ),
         responses={
             200: open_api_schemas.StixObject,
-            **serializers.TaxiiErrorSerializer.error_responses(),
+            **serializers.TaxiiErrorSerializer.error_responses([
+                (400, "The server did not understand the request or filter parameters"),
+                (401, "The client needs to authenticate"),
+                (403, "The client does not have access to this objects resource"),
+                (404, "The API Root or Collection ID are not found, or the client does not have access to the objects resource"),
+                (406, "The media type provided in the Accept header is invalid"),
+            ]),
         },
     )
     def list(self, request: Request, api_root="", collection_id="", more_queries={}):
@@ -408,7 +461,13 @@ class ObjectView(ArangoView, viewsets.ViewSet):
         parameters=open_api_schemas.SingleObjectQueryParams,
         responses={
             200: open_api_schemas.StixObject,
-            **serializers.TaxiiErrorSerializer.error_responses(),
+            **serializers.TaxiiErrorSerializer.error_responses([
+                (400, "The server did not understand the request or filter parameters"),
+                (401, "The client needs to authenticate"),
+                (403, "The client does not have access to this object resource"),
+                (404, "The API Root, Collection ID and/or Object ID are not found, or the client does not have access to the object resource"),
+                (406, "The media type provided in the Accept header is invalid"),
+            ]),
         },
         description=textwrap.dedent(
             """
@@ -422,11 +481,51 @@ class ObjectView(ArangoView, viewsets.ViewSet):
             request, api_root, collection_id, more_queries={"match[id]": object_id}
         )
 
+    
+    @extend_schema(
+        parameters=open_api_schemas.ObjectDeleteParams,
+        tags=open_api_schemas.OpenApiTags.COLLECTIONS.tags,
+        summary="Delete a specific object from a collection",
+        responses={
+            (200, TaxiiJSONRenderer.media_type): open_api_schemas.OpenApiTypes.NONE,
+            **serializers.TaxiiErrorSerializer.error_responses([
+                (400, "The server did not understand the request"),
+                (401, "The client needs to authenticate"),
+                (403, "The client has access to the object, but not to delete it"),
+                (404, "The API Root, Collection ID and/or Object ID are not found, or the client does not have access to the object"),
+                (406, "The media type provided in the Accept header is invalid"),
+            ]),
+        },
+        description=textwrap.dedent(
+            """
+        This Endpoint deletes an object from a Collection by its id. The `object_id` MUST be the STIX id. To support removing a particular version of an object, this Endpoint supports filtering. The only valid match parameter is `version`. If no filters are applied, all versions of the object will be deleted.\n\n
+        If no authorization header is passed then you will get a 401 (Unauthorized) error. If your request fails authentication then you will get a HTTP 404 (Not found) error. If you are not authorized to view this API Root, or either the API Root and/or Collection does not exist you will get a HTTP 404 (Not Found) error. If the Collection you are trying to add an object to specifies `can_write` as `false` for your authenticated user you will get a HTTP 403 (Forbidden) error.
+        """
+        ),
+    )
+    def destroy(self, request: Request, api_root="", collection_id="", object_id=""):
+        db: arango_helper.ArangoSession = request.user.arango_session
+        db.remove_object(
+            api_root,
+            collection_id,
+            object_id,
+            match_version=request.query_params.get("match[version]", ""),
+            match_spec_version=request.query_params.get("match[spec_version]", ""),
+        )
+        return Response()
+
+
     @extend_schema(
         parameters=open_api_schemas.VersionsQueryParams,
         responses={
             200: open_api_schemas.OpenApiTypes.DATETIME,
-            **serializers.TaxiiErrorSerializer.error_responses(),
+            **serializers.TaxiiErrorSerializer.error_responses([
+                (400, "The server did not understand the request or filter parameters"),
+                (401, "The client needs to authenticate"),
+                (403, "The client does not have access to this versions resource"),
+                (404, "The API Root, Collection ID and/or Object ID are not found, or the client does not have access to the versions resource"),
+                (406, "The media type provided in the Accept header is invalid"),
+            ]),
         },
         tags=open_api_schemas.OpenApiTags.COLLECTIONS.tags,
         summary="Get a list of object versions from a collection",
@@ -453,29 +552,3 @@ class ObjectView(ArangoView, viewsets.ViewSet):
         return self.pagination_class.get_paginated_response(
             [x["version"] for x in objects.result], objects
         )
-
-    @extend_schema(
-        parameters=open_api_schemas.ObjectDeleteParams,
-        tags=open_api_schemas.OpenApiTags.COLLECTIONS.tags,
-        summary="Delete a specific object from a collection",
-        responses={
-            (200, TaxiiJSONRenderer.media_type): open_api_schemas.OpenApiTypes.NONE,
-            **serializers.TaxiiErrorSerializer.error_responses(),
-        },
-        description=textwrap.dedent(
-            """
-        This Endpoint deletes an object from a Collection by its id. The `object_id` MUST be the STIX id. To support removing a particular version of an object, this Endpoint supports filtering. The only valid match parameter is `version`. If no filters are applied, all versions of the object will be deleted.\n\n
-        If no authorization header is passed then you will get a 401 (Unauthorized) error. If your request fails authentication then you will get a HTTP 404 (Not found) error. If you are not authorized to view this API Root, or either the API Root and/or Collection does not exist you will get a HTTP 404 (Not Found) error. If the Collection you are trying to add an object to specifies `can_write` as `false` for your authenticated user you will get a HTTP 403 (Forbidden) error.
-        """
-        ),
-    )
-    def destroy(self, request: Request, api_root="", collection_id="", object_id=""):
-        db: arango_helper.ArangoSession = request.user.arango_session
-        db.remove_object(
-            api_root,
-            collection_id,
-            object_id,
-            match_version=request.query_params.get("match[version]", ""),
-            match_spec_version=request.query_params.get("match[spec_version]", ""),
-        )
-        return Response()

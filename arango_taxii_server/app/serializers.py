@@ -1,5 +1,9 @@
 import json
-from drf_spectacular.utils import extend_schema_field, extend_schema_serializer
+from drf_spectacular.utils import (
+    extend_schema_field,
+    extend_schema_serializer,
+    OpenApiResponse,
+)
 from rest_framework import serializers
 
 from .. import conf
@@ -186,30 +190,7 @@ class TaxiiStatusSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 
-def error_examples():
-    TAXII_ERROR_MAPPING = {
-        400: "The server did not understand the request or filter parameters",
-        401: "The client needs to authenticate",
-        403: "The client does not have access to this manifest resource",
-        404: "The API Root or Collection ID are not found, or the client does not have access to the manifest resource",
-        406: "The media type provided in the Accept header is invalid",
-        413: "The POSTed payload exceeds the max_content_length of the API Root",
-        415: "The client attempted to POST a payload with a content type the server does not support",
-        422: "The object type or version is not supported or could not be processed.",
-    }
-    examples = []
-    for status_code, title in TAXII_ERROR_MAPPING.items():
-        examples.append(
-            ArangoTaxiiOpenApiExample(
-                f"example-{status_code}",
-                status_codes=[status_code],
-                value=dict(title=title, http_status=str(status_code)),
-            ),
-        )
-    return examples
 
-
-@extend_schema_serializer(examples=error_examples())
 class TaxiiErrorSerializer(serializers.Serializer):
     title = serializers.CharField(required=True)
     description = serializers.CharField(required=False)
@@ -218,9 +199,17 @@ class TaxiiErrorSerializer(serializers.Serializer):
     http_status = serializers.CharField(required=True)
 
     @classmethod
-    def error_responses(cls, *status_codes):
-        status_codes = status_codes or [400, 401, 403, 404, 406]
-        retval = {}
-        for code in status_codes:
-            retval[code] = cls
-        return retval
+    def error_responses(cls, errors: list[tuple[int, str]]) -> dict[int, OpenApiResponse]:
+        responses = {}
+        for status_code, message in errors:
+            responses[status_code] = OpenApiResponse(
+                cls,
+                message,
+                examples=[
+                    ArangoTaxiiOpenApiExample(
+                        "example",
+                        value={"title": message, "http_status": str(status_code)},
+                    )
+                ],
+            )
+        return responses
