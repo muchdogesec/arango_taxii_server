@@ -151,17 +151,14 @@ class ObjectsSerializer(serializers.Serializer):
 class TaxxiiStatusObjectField(serializers.ModelSerializer):
     id = serializers.CharField(source="stix_id")
     version = serializers.DateTimeField(source="get_version", read_only=True)
-    stix_data_json = serializers.CharField(write_only=True)
-    created = serializers.DateTimeField(write_only=True)
-    modified = serializers.DateTimeField(write_only=True)
+    created = serializers.DateTimeField(write_only=True, allow_null=True, required=False)
+    modified = serializers.DateTimeField(write_only=True, allow_null=True, required=False)
 
     class Meta:
         model = models.ObjectStatus
-        fields = ("message", "version", "id", "stix_data_json", "created", "modified")
+        fields = ("message", "version", "id", "created", "modified")
 
     def run_validation(self, data=...):
-        if isinstance(data, dict):
-            data["stix_data_json"] = json.dumps(data)
         return super().run_validation(data)
 
 

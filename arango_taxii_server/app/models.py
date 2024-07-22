@@ -57,7 +57,6 @@ class ObjectStatus(models.Model):
     task = models.ForeignKey(
         UploadTask, on_delete=models.CASCADE, related_name="uploads"
     )
-    stix_data_json = models.CharField(max_length=10_000)
 
     def get_version(self):
         return self.modified or self.created or self.task.request_timestamp

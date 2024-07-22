@@ -286,6 +286,7 @@ class CustomAutoSchema(AutoSchema):
 
     def _is_list_view(self, *args, **kwargs):
         if getattr(self.view, "pagination_class", None):
+            print(self.method, self.path)
             return True
         return False
 

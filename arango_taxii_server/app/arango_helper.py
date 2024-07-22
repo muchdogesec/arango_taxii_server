@@ -52,7 +52,6 @@ class ArangoFullPermissionParser:
 
 class ArangoSession:
     HOST_URL = os.environ["ARANGODB"]
-    stix2arango_path = conf.stix2arango_path
 
     def __init__(self, arango_auth) -> None:
         self.user, self.password = arango_auth
@@ -389,43 +388,15 @@ class ArangoSession:
             raise resp.error
         return resp
 
-    def stix2arango(self, db_name, collection, bundle_path, status_id):
-        uri = urlparse(self.HOST_URL)
-        env = {
-            **os.environ,
-            "ARANGODB_HOST": uri.hostname,
-            "ARANGO_HOST": uri.hostname,
-            "ARANGODB_PORT": str(uri.port),
-            "ARANGODB_USERNAME": self.user,
-            "ARANGODB_PASSWORD": self.password,
-        }
-        database, collection = self.stix2arango_validate(db_name, collection)
-        args = [
-            "python",
-            self.stix2arango_path,
-            "--file",
-            bundle_path,
-            "--database",
-            database,
-            "--collection",
-            collection,
-            "--stix2arango_note",
-            f"arango_taxii_status_id={status_id}",
-        ]
-        # with tempfile.NamedTemporaryFile(delete=False) as f:
-        return subprocess.check_call(args, env=env, cwd=self.stix2arango_path.parent)
-
-    def stix2arango_validate(self, db_name, collection_id):
-        db_m = DB_NAME_RE.match(db_name)
-        cname_m = COLLECTION_INFO_RE.match(collection_id)
-        if not db_m:
-            raise ArangoError(
-                400,
-                f"unsupported value for {{arango_database_name}}: `{db_name}`, must be in form {{str}}_database",
-            )
-        if cname_m:
-            collection_id = cname_m.group(1)
-        return db_m.group(1), collection_id
+    
+    def validate_bundle(self, objects):
+        obj_set = set()
+        for obj in objects:
+            id = obj.get('id')
+            if id in obj_set:
+                raise StixValidationError(f"duplicate object with id: {id}")
+            obj_set.add(id)
+        return True
 
 
 class ArangoError(Exception):
@@ -436,6 +407,13 @@ class ArangoError(Exception):
 
     def __str__(self) -> str:
         return f"{self.__class__}(http_code={self.http_code}, message={self.message})"
+    
+class StixValidationError(Exception):
+    def __init__(self, message) -> None:
+        self.http_code = 400
+        self.message = f"object validation error: {message}"
+        super().__init__(message)
+
 
 
 class ArangoResponse:

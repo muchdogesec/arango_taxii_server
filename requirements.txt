@@ -44,3 +44,4 @@ vine==5.1.0; python_version >= '3.6'
 wcwidth==0.2.13
 zipp==3.18.2; python_version >= '3.8'
 pytest==8.2.2; python_version >= '3.8'
+https://github.com/muchdogesec/stix2arango/archive/main.zip?v=kz

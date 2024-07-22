@@ -340,7 +340,7 @@ class ObjectView(ArangoView, viewsets.ViewSet):
     def pagination_class(self):
         if self.action == "versions":
             return TaxiiEnvelope("versions")
-        elif self.action == "destroy":
+        elif self.action in ["destroy", "create"]:
             return None
         return TaxiiEnvelope("objects")
 
@@ -351,6 +351,7 @@ class ObjectView(ArangoView, viewsets.ViewSet):
 
     @extend_schema(
         tags=open_api_schemas.OpenApiTags.COLLECTIONS.tags,
+        filters=False,
         responses={
             200: serializers.TaxiiStatusSerializer,
             **serializers.TaxiiErrorSerializer.error_responses(
@@ -402,6 +403,11 @@ class ObjectView(ArangoView, viewsets.ViewSet):
                 "The object type or version is not supported or could not be processed.",
                 details=dict(errors=serializer.errors),
             )
+        try:
+            if not db.validate_bundle(serializer.data["objects"]):
+                return ErrorResp(400, "one or more validation error occured")
+        except arango_helper.StixValidationError as e:
+            return ErrorResp(400, e.message)
 
         status_id = uuid.uuid4()
         serializer1 = serializers.TaxiiStatusSerializer(
@@ -419,7 +425,7 @@ class ObjectView(ArangoView, viewsets.ViewSet):
         serializer2 = serializers.TaxxiiStatusObjectField(data=objects, many=True)
         serializer2.is_valid(raise_exception=True)
         serializer2.save(task=task)
-        task_helpers.start_task.delay(task.pk)
+        task_helpers.upload_all.delay(task.pk, db.user, db.password, serializer.data["objects"])
         return get_status(task.pk)
 
     @extend_schema(
