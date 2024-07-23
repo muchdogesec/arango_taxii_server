@@ -356,7 +356,7 @@ class ObjectView(ArangoView, viewsets.ViewSet):
                     (403, "The client does not have access to write to this objects resource. You should check `can_write` is `true` for this Collection for the authenticated user."),
                     (404, "The API Root or Collection ID are not found, or the client can not write to this objects resource."),
                     (406, "The media type provided in the Accept header is invalid. Should be `Accept: application/taxii+json;version=2.1`."),
-                    (413, "The POSTed payload exceeds the `max_content_length` of the API Root. You can find the `max_content_length` value using the Collections resource."),
+                    (413, "The POSTed payload exceeds the `max_content_length` of the API Root. You can find the `max_content_length` value using the API Root resource."),
                     (415, "The client attempted to POST a payload with a content type the server does not support. Arango TAXII Server only supports STIX 2.1."),
                     (422, "The object type or version is not supported or could not be processed."),
                 ]
