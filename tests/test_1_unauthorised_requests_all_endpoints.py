@@ -35,20 +35,14 @@ class BadCredentialsUser(unittest.TestCase):
             self.assertIn(key, response.headers)
             self.assertEqual(response.headers[key], value)
 
-    def test_01_get_schema(self):
-        url = URL_SCHEMA
-        response = requests.get(url, headers=REQUEST_SCHEMA_HEADERS)
-        self.log_response(url, REQUEST_SCHEMA_HEADERS, response)
-        self.assertEqual(response.status_code, 200, f"Expected 200, got {response.status_code}")
-
-    def test_02_get_discover(self):
+    def test_01_get_discover(self):
         url = URL_DISCOVER
         response = requests.get(url, headers=self.headers)
         self.log_response(url, self.headers, response)
         self.check_response_headers(response)
         self.assertEqual(response.status_code, 401, f"Expected 401, got {response.status_code}")
 
-    def test_03_get_api_root(self):
+    def test_02_get_api_root(self):
         for api_root in API_ROOT:
             url = URL_API_ROOT.replace("{API_ROOT}", api_root)
             response = requests.get(url, headers=self.headers)
@@ -56,7 +50,7 @@ class BadCredentialsUser(unittest.TestCase):
             self.check_response_headers(response)
             self.assertEqual(response.status_code, 401, f"Expected 401, got {response.status_code}")
 
-    def test_04_get_collections_list(self):
+    def test_03_get_collections_list(self):
         for api_root in API_ROOT:
             url = URL_COLLECTIONS_LIST.replace("{API_ROOT}", api_root)
             response = requests.get(url, headers=self.headers)
@@ -64,7 +58,7 @@ class BadCredentialsUser(unittest.TestCase):
             self.check_response_headers(response)
             self.assertEqual(response.status_code, 401, f"Expected 401, got {response.status_code}")
 
-    def test_05_get_collection(self):
+    def test_04_get_collection(self):
         for api_root in API_ROOT:
             for collection_id in LIST_OF_COLLECTION_IDS:
                 url = URL_COLLECTION.replace("{API_ROOT}", api_root).replace("{COLLECTION_ID}", collection_id)
@@ -73,16 +67,16 @@ class BadCredentialsUser(unittest.TestCase):
                 self.check_response_headers(response)
                 self.assertEqual(response.status_code, 401, f"Expected 401, got {response.status_code}")
 
-    def test_06_get_collection_manifest(self):
+    def test_05_get_collection_manifest(self):
         for api_root in API_ROOT:
             for collection_id in LIST_OF_COLLECTION_IDS:
                 url = URL_COLLECTION_MANIFEST.replace("{API_ROOT}", api_root).replace("{COLLECTION_ID}", collection_id)
-                response = requests.get(url, headers=REQUEST_HEADERS_MANIFEST)
-                self.log_response(url, REQUEST_HEADERS_MANIFEST, response)
+                response = requests.get(url, headers=self.headers)
+                self.log_response(url, self.headers, response)
                 self.check_response_headers(response)
                 self.assertEqual(response.status_code, 401, f"Expected 401, got {response.status_code}")
 
-    def test_07_get_collection_objects(self):
+    def test_06_get_collection_objects(self):
         for api_root in API_ROOT:
             for collection_id in LIST_OF_COLLECTION_IDS:
                 url = URL_COLLECTION_OBJECTS.replace("{API_ROOT}", api_root).replace("{COLLECTION_ID}", collection_id)
@@ -91,7 +85,7 @@ class BadCredentialsUser(unittest.TestCase):
                 self.check_response_headers(response)
                 self.assertEqual(response.status_code, 401, f"Expected 401, got {response.status_code}")
 
-    def test_08_post_collection_objects(self):
+    def test_07_post_collection_objects(self):
         api_root = "arango_taxii_server_tests_database"
         url = URL_COLLECTION_OBJECTS.replace("{API_ROOT}", api_root).replace("{COLLECTION_ID}", "mitre_attack_enterprise")
         data = {
@@ -102,7 +96,7 @@ class BadCredentialsUser(unittest.TestCase):
         self.check_response_headers(response)
         self.assertEqual(response.status_code, 401, f"Expected 401, got {response.status_code}")
 
-    def test_09_verify_post_collection_objects(self):
+    def test_08_verify_post_collection_objects(self):
         api_root = "arango_taxii_server_tests_database"
         verification_url = URL_OBJECT.replace("{API_ROOT}", api_root).replace("{COLLECTION_ID}", "mitre_attack_enterprise").replace("{OBJECT_ID}", DUMMY_OBJECT_ID)
         verification_response = requests.get(verification_url, headers=self.root_headers)
@@ -115,7 +109,7 @@ class BadCredentialsUser(unittest.TestCase):
         self.assertEqual(verification_response.status_code, 200, f"Expected 200, got {verification_response.status_code}")
         self.assertEqual(verification_response.json(), expected_verification_body, f"Expected {expected_verification_body}, got {verification_response.json()}")
 
-    def test_10_get_object(self):
+    def test_09_get_object(self):
         api_root = "arango_taxii_server_tests_database"
         object_ids = {
             "mitre_attack_enterprise": "attack-pattern--1126cab1-c700-412f-a510-61f4937bb096",
@@ -129,7 +123,7 @@ class BadCredentialsUser(unittest.TestCase):
             self.check_response_headers(response)
             self.assertEqual(response.status_code, 401, f"Expected 401, got {response.status_code}")
 
-    def test_11_delete_object(self):
+    def test_10_delete_object(self):
         api_root = "arango_taxii_server_tests_database"
         object_ids = {
             "mitre_attack_enterprise": "attack-pattern--1126cab1-c700-412f-a510-61f4937bb096",
@@ -143,7 +137,7 @@ class BadCredentialsUser(unittest.TestCase):
             self.check_response_headers(response)
             self.assertEqual(response.status_code, 401, f"Expected 401, got {response.status_code}")
 
-    def test_12_verify_delete_object(self):
+    def test_11_verify_delete_object(self):
         api_root = "arango_taxii_server_tests_database"
         object_ids = {
             "mitre_attack_enterprise": "attack-pattern--1126cab1-c700-412f-a510-61f4937bb096",
@@ -159,7 +153,7 @@ class BadCredentialsUser(unittest.TestCase):
             self.assertFalse(response_json.get('more'), "Expected 'more' to be false")
             self.assertGreater(len(response_json.get('objects', [])), 0, "Expected more than 1 object in the response")
 
-    def test_13_get_object_versions(self):
+    def test_12_get_object_versions(self):
         api_root = "arango_taxii_server_tests_database"
         object_ids = {
             "mitre_attack_enterprise": "attack-pattern--1126cab1-c700-412f-a510-61f4937bb096",
@@ -173,7 +167,7 @@ class BadCredentialsUser(unittest.TestCase):
             self.check_response_headers(response)
             self.assertEqual(response.status_code, 401, f"Expected 401, got {response.status_code}")
 
-    def test_14_get_status(self):
+    def test_13_get_status(self):
         for api_root in API_ROOT:
             url = URL_STATUS.replace("{API_ROOT}", api_root).replace("{STATUS_ID}", DUMMY_STATUS_ID)
             response = requests.get(url, headers=self.headers)

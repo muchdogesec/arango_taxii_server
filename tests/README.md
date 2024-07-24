@@ -27,12 +27,12 @@ python tests/setup_arango.py
 ##### OR setup database for testing manually
 
 ```shell
-python3 utilities/arango_cti_processor/insert_archive_attack_enterprise.py --database arango_taxii_server_tests --versions 14_1,15_0,15_1 --ignore_embedded_relationships false && \
-python3 utilities/arango_cti_processor/insert_archive_attack_ics.py --database arango_taxii_server_tests --versions 14_1,15_0,15_1 --ignore_embedded_relationships false && \
-python3 utilities/arango_cti_processor/insert_archive_attack_mobile.py --database arango_taxii_server_tests --versions 14_1,15_0,15_1 --ignore_embedded_relationships false
+python3 utilities/arango_cti_processor/insert_archive_attack_enterprise.py --database arango_taxii_server_tests --versions 13_0,13_1,14_0,14_1,15_0,15_1 && \
+python3 utilities/arango_cti_processor/insert_archive_attack_ics.py --database arango_taxii_server_tests --versions 13_0,13_1,14_0,14_1,15_0,15_1 && \
+python3 utilities/arango_cti_processor/insert_archive_attack_mobile.py --database arango_taxii_server_tests --versions 13_0,13_1,14_0,14_1,15_0,15_1 
 ```
 
-This will install the MITRE ATT&CK versions 14.1, 15.0, 15.1 into ArangoDB into a database called `arango_taxii_server_tests_database` with each dataset in the following collections:
+This will install the specified versions of MITRE ATT&CK into ArangoDB into a database called `arango_taxii_server_tests_database` with each dataset in the following collections:
 
 * `mitre_attack_enterprise_vertex_collection`/`mitre_attack_enterprise_edge_collection`
 * `mitre_attack_ics_vertex_collection`/`mitre_attack_ics_edge_collection`
@@ -41,7 +41,7 @@ This will install the MITRE ATT&CK versions 14.1, 15.0, 15.1 into ArangoDB into 
 And then for the versioning tests
 
 ```shell
-python3 utilities/arango_cti_processor/insert_archive_attack_enterprise.py --database arango_taxii_server_tests_versioning --ignore_embedded_relationships true &&
+python3 utilities/arango_cti_processor/insert_archive_attack_enterprise.py --database arango_taxii_server_tests_versioning
 ```
 
 This will install all versions of MITRE ATT&CK Enterprise into the database `arango_taxii_server_tests_versioning` with each dataset in the following collections:

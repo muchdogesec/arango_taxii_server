@@ -20,10 +20,6 @@ POST_REQUEST_HEADERS = {
     "Content-Type": "application/taxii+json;version=2.1",
 }
 
-REQUEST_HEADERS_MANIFEST = {
-    "Accept": "application/taxii+json;version=2.1,application/stix+json;version=2.1"
-}
-
 REQUEST_SCHEMA_HEADERS = {"accept": "application/vnd.oai.openapi"}
 
 RESPONSE_HEADERS = {"Content-Type": "application/taxii+json;version=2.1"}
@@ -46,26 +42,43 @@ MOBILE_OBJECT_ID = "attack-pattern--00290ac5-551e-44aa-bbd8-c4b913488a6d"
 VALID_MITRE_ATTACK_ENTERPRISE_COLLECTION_OBJECT_IDS = [
     {
         "id": "attack-pattern--2bce5b30-7014-4a5d-ade7-12913fe6ac36",
-        "versions": ["2021-04-29T14:49:39.188Z"],
+        "versions": [
+            "2021-04-29T14:49:39.188Z"
+        ],
     },
     {
         "id": "attack-pattern--67720091-eee3-4d2d-ae16-8264567f6f5b",
-        "versions": ["2023-10-02T00:47:11.369Z", "2024-04-15T20:52:09.908Z"],
+        "versions": [
+            "2023-04-21T12:35:07.744Z",
+            "2023-05-09T14:00:00.188Z",
+            "2023-10-02T00:47:11.369Z",
+            "2024-04-15T20:52:09.908Z"
+        ],
     },
     {
         "id": "tool--30489451-5886-4c46-90c9-0dff9adc5252",
-        "versions": ["2023-07-25T19:24:08.305Z"],
+        "versions": [
+            "2022-05-11T14:00:00.188Z",
+            "2023-07-25T19:24:08.305Z"
+        ],
     },
 ]
 
 VALID_MITRE_ATTACK_ENTERPRISE_COLLECTION_RELATIONSHIP_IDS = [
     {
-        "id": "relationship--00038d0e-7fc7-41c3-9055-edb4d87ea912",
-        "versions": ["2021-04-27T01:56:35.810Z"],
+        "id": "relationship--080d9097-f5b8-5a29-8daa-458ee7845d37",
+        "versions": [
+            "2023-04-21T12:35:07.744Z",
+            "2023-05-09T14:00:00.188Z",
+            "2023-10-02T00:47:11.369Z",
+            "2024-04-15T20:52:09.908Z"
+        ]
     },
     {
         "id": "relationship--00192a5f-9dc0-445a-b010-d77bd08aac93",
-        "versions": ["2021-06-08T13:29:06.838Z"],
+        "versions": [
+            "2021-06-08T13:29:06.838Z"
+        ],
     },
 ]
 
@@ -73,18 +86,23 @@ VALID_MITRE_ATTACK_ENTERPRISE_COLLECTION_EMBEDDED_RELATIONSHIP_IDS = [
     {
         "id": "relationship--cf2fdad6-76ad-5521-b6a0-3671ad1892b7",
         "versions": [
+            "2023-04-25T14:00:00.188Z",
+            "2023-05-09T14:00:00.188Z",
+            "2023-10-31T14:00:00.188Z",
             "2023-11-14T14:00:00.188Z",
             "2024-04-23T14:00:00.188Z",
-            "2024-05-02T14:00:00.188Z",
+            "2024-05-02T14:00:00.188Z"
         ],
     },
     {
         "id": "relationship--a0a48703-e7e8-55d5-bcf3-f524b9ada4e9",
-        "versions": ["2023-03-30T21:01:39.967Z"],
+        "versions": [
+            "2023-03-30T21:01:39.967Z"
+        ],
     },
 ]
 
-# Dummy ID for unauthorized tests
+# Dummys for unauthorized tests adding objects
 DUMMY_STATUS_ID = "fake-id--a668e98c-84fa-4b76-b20a-4a880e20d62c"
 DUMMY_OBJECT_ID = "dummy--b41e15b1-1595-4e4a-bb03-e6f48f7edafb"
 DUMMY_OBJECT = {
@@ -97,26 +115,11 @@ DUMMY_OBJECT = {
     "name": "DUMMY OBJECT 1",
     "description": "Added first",
 }
-DUMMY_OBJECT_2 = {
-    "type": "dummy",
-    "spec_version": "2.1",
-    "id": "dummy--b41e15b1-1595-4e4a-bb03-e6f48f7edafb",
-    "created_by_ref": "identity--5edfebc9-331c-4264-a5bb-411a72089d41",
-    "created": "2000-01-01T00:00:00.000Z",
-    "modified": "2001-01-01T00:00:00.000Z",
-    "name": "DUMMY OBJECT 2",
-    "description": "Added second",
-}
-DUMMY_OBJECT_3 = {
-    "type": "dummy",
-    "spec_version": "2.1",
-    "id": "dummy--b41e15b1-1595-4e4a-bb03-e6f48f7edafb",
-    "created_by_ref": "identity--5edfebc9-331c-4264-a5bb-411a72089d41",
-    "created": "2000-01-01T00:00:00.000Z",
-    "modified": "2002-01-01T00:00:00.000Z",
-    "name": "DUMMY OBJECT 3",
-    "description": "Added third",
-}
+
+# More realistic objects
+
+
+
 
 # URL endpoints
 URL_SCHEMA = f"{BASE_URL}/api/schema/"

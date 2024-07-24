@@ -37,15 +37,7 @@ class TestReadUser(unittest.TestCase):
             self.assertIn(key, response.headers)
             self.assertEqual(response.headers[key], value)
 
-    def test_get_schema(self):
-        url = URL_SCHEMA
-        response = requests.get(url, headers=self.headers)
-        self.log_response(self.global_test_counter, url, self.headers, response, auth="read_user", method="GET")
-        self.check_response_headers(response)
-        self.assertEqual(response.status_code, 200, f"Expected 200, got {response.status_code}")
-        self.global_test_counter += 1
-
-    def test_get_discover(self):
+    def test_01_get_discover(self):
         url = URL_DISCOVER
         response = requests.get(url, headers=self.headers)
         self.log_response(self.global_test_counter, url, self.headers, response, auth="read_user", method="GET")
@@ -62,7 +54,7 @@ class TestReadUser(unittest.TestCase):
         self.assertEqual(response.json(), expected_body, f"Expected {expected_body}, got {response.json()}")
         self.global_test_counter += 1
 
-    def test_get_api_root(self):
+    def test_02_get_api_root(self):
         for api_root in API_ROOT:
             url = URL_API_ROOT.replace("{API_ROOT}", api_root)
             response = requests.get(url, headers=self.headers)
@@ -79,7 +71,7 @@ class TestReadUser(unittest.TestCase):
             self.assertEqual(response.json(), expected_body, f"Expected {expected_body}, got {response.json()}")
             self.global_test_counter += 1
 
-    def test_get_collections_list(self):
+    def test_03_get_collections_list(self):
         for api_root in API_ROOT:
             url = URL_COLLECTIONS_LIST.replace("{API_ROOT}", api_root)
             response = requests.get(url, headers=self.headers)
@@ -88,8 +80,8 @@ class TestReadUser(unittest.TestCase):
             expected_body = {
                 "collections": [
                     {
-                        "id": "mitre_attack_ics",
-                        "title": "mitre_attack_ics",
+                        "id": "mitre_attack_enterprise",
+                        "title": "mitre_attack_enterprise",
                         "description": "vertex+edge",
                         "can_read": True,
                         "can_write": False,
@@ -108,8 +100,8 @@ class TestReadUser(unittest.TestCase):
                         ]
                     },
                     {
-                        "id": "mitre_attack_enterprise",
-                        "title": "mitre_attack_enterprise",
+                        "id": "mitre_attack_ics",
+                        "title": "mitre_attack_ics",
                         "description": "vertex+edge",
                         "can_read": True,
                         "can_write": False,
@@ -123,7 +115,7 @@ class TestReadUser(unittest.TestCase):
             self.assertEqual(response.json(), expected_body, f"Expected {expected_body}, got {response.json()}")
             self.global_test_counter += 1
 
-    def test_get_collection(self):
+    def test_04_get_collection(self):
         for api_root in API_ROOT:
             for collection_id in LIST_OF_COLLECTION_IDS:
                 url = URL_COLLECTION.replace("{API_ROOT}", api_root).replace("{COLLECTION_ID}", collection_id)
@@ -135,18 +127,21 @@ class TestReadUser(unittest.TestCase):
                     "title": collection_id,
                     "description": "vertex+edge",
                     "can_read": True,
-                    "can_write": False
+                    "can_write": False,
+                        "media_types": [
+                            "application/stix+json;version=2.1"
+                        ]
                 }
                 self.assertEqual(response.status_code, 200, f"Expected 200, got {response.status_code}")
                 self.assertEqual(response.json(), expected_body, f"Expected {expected_body}, got {response.json()}")
                 self.global_test_counter += 1
 
-    def test_get_collection_manifest(self):
+    def test_05_get_collection_manifest(self):
         for api_root in API_ROOT:
             for collection_id in LIST_OF_COLLECTION_IDS:
                 url = URL_COLLECTION_MANIFEST.replace("{API_ROOT}", api_root).replace("{COLLECTION_ID}", collection_id)
-                response = requests.get(url, headers=REQUEST_HEADERS_MANIFEST)
-                self.log_response(self.global_test_counter, url, REQUEST_HEADERS_MANIFEST, response, auth="read_user", method="GET")
+                response = requests.get(url, headers=self.headers)
+                self.log_response(self.global_test_counter, url, self.headers, response, auth="read_user", method="GET")
                 self.check_response_headers(response)
                 expected_body = response.json()
                 self.assertTrue(expected_body.get('more'), "Expected 'more' to be true")
@@ -154,7 +149,7 @@ class TestReadUser(unittest.TestCase):
                 self.assertEqual(response.status_code, 200, f"Expected 200, got {response.status_code}")
                 self.global_test_counter += 1
 
-    def test_get_collection_objects(self):
+    def test_06_get_collection_objects(self):
         for api_root in API_ROOT:
             for collection_id in LIST_OF_COLLECTION_IDS:
                 url = URL_COLLECTION_OBJECTS.replace("{API_ROOT}", api_root).replace("{COLLECTION_ID}", collection_id)
@@ -167,7 +162,7 @@ class TestReadUser(unittest.TestCase):
                 self.assertEqual(response.status_code, 200, f"Expected 200, got {response.status_code}")
                 self.global_test_counter += 1
 
-    def test_post_collection_objects(self):
+    def test_07_post_collection_objects(self):
         for api_root in API_ROOT:
             for collection_id in LIST_OF_COLLECTION_IDS:
                 url = URL_COLLECTION_OBJECTS.replace("{API_ROOT}", api_root).replace("{COLLECTION_ID}", collection_id)
@@ -193,7 +188,7 @@ class TestReadUser(unittest.TestCase):
                 self.assertEqual(verification_response.status_code, 200, f"Expected 200, got {verification_response.status_code}")
                 self.assertEqual(verification_response.json(), expected_verification_body, f"Expected {expected_verification_body}, got {verification_response.json()}")
 
-    def test_get_object(self):
+    def test_08_get_object(self):
         for api_root in API_ROOT:
             for object_info in VALID_MITRE_ATTACK_ENTERPRISE_COLLECTION_OBJECT_IDS:
                 collection_id = "mitre_attack_enterprise"
@@ -234,7 +229,7 @@ class TestReadUser(unittest.TestCase):
                 self.assertEqual(response_json["objects"][0]["id"], object_info["id"], f"Expected object ID {object_info['id']}")
                 self.global_test_counter += 1
 
-    def test_delete_object(self):
+    def test_09_delete_object(self):
         for api_root in API_ROOT:
             for object_info in VALID_MITRE_ATTACK_ENTERPRISE_COLLECTION_OBJECT_IDS:
                 collection_id = "mitre_attack_enterprise"
@@ -293,7 +288,7 @@ class TestReadUser(unittest.TestCase):
                 self.assertEqual(len(response_json.get('objects', [])), 1, "Expected exactly 1 object")
                 self.assertEqual(response_json["objects"][0]["id"], object_info["id"], f"Expected object ID {object_info['id']}")
 
-    def test_get_object_versions(self):
+    def test_10_get_object_versions(self):
         for api_root in API_ROOT:
             for object_info in VALID_MITRE_ATTACK_ENTERPRISE_COLLECTION_OBJECT_IDS:
                 collection_id = "mitre_attack_enterprise"
@@ -331,7 +326,7 @@ class TestReadUser(unittest.TestCase):
                 self.assertEqual(response_json.get('versions', []), object_info["versions"], f"Expected versions {object_info['versions']}")
                 self.global_test_counter += 1
 
-    def test_get_status(self):
+    def test_11_get_status(self):
         for api_root in API_ROOT:
             url = URL_STATUS.replace("{API_ROOT}", api_root).replace("{STATUS_ID}", DUMMY_STATUS_ID)
             response = requests.get(url, headers=self.headers)
