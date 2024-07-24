@@ -27,12 +27,14 @@ RESPONSE_HEADERS = {"Content-Type": "application/taxii+json;version=2.1"}
 # API roots to use
 API_ROOT = ["arango_taxii_server_tests_database"]
 
-# Collection IDs to use
+# Collection IDs to use for read requests
 LIST_OF_COLLECTION_IDS = [
     "mitre_attack_enterprise",
     "mitre_attack_ics",
     "mitre_attack_mobile",
 ]
+
+WRITE_LIST_OF_COLLECTION_IDS = ["versioning"]
 
 ENTERPRISE_OBJECT_ID = "attack-pattern--1126cab1-c700-412f-a510-61f4937bb096"
 ICS_OBJECT_ID = "attack-pattern--1c5cf58c-a34a-40d7-82f4-f987cdfc2b91"

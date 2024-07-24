@@ -9,13 +9,14 @@ source arango_taxii_server-venv/bin/activate
 pip3 install -r requirements.txt
 ```
 
+### Current test coverage
+
+These tests do not currently test
+
+* write user add / delete objects
+* testing url parameters on endpoint
+
 ### Import required data
-
-#### ATT&CK data
-
-Download and setup a stix2arango install outside of arango_taxii_server (do not use the one that ships with this codebase).
-
-Once done can then run...
 
 ##### setup database for testing automatically
    
@@ -25,6 +26,8 @@ python tests/setup_arango.py
 ```
 
 ##### OR setup database for testing manually
+
+###### For all read requests
 
 ```shell
 python3 utilities/arango_cti_processor/insert_archive_attack_enterprise.py --database arango_taxii_server_tests --versions 13_0,13_1,14_0,14_1,15_0,15_1 && \
@@ -38,15 +41,15 @@ This will install the specified versions of MITRE ATT&CK into ArangoDB into a da
 * `mitre_attack_ics_vertex_collection`/`mitre_attack_ics_edge_collection`
 * `mitre_attack_mobile_vertex_collection`/`mitre_attack_mobile_edge_collection`
 
-And then for the versioning tests
+###### For all write requests
 
-```shell
-python3 utilities/arango_cti_processor/insert_archive_attack_enterprise.py --database arango_taxii_server_tests_versioning
-```
+To ensure a clean dataset for testing we use two seperate collections for write requests
 
-This will install all versions of MITRE ATT&CK Enterprise into the database `arango_taxii_server_tests_versioning` with each dataset in the following collections:
+To do this, create the two collections:
 
-* `mitre_attack_enterprise_vertex_collection`/`mitre_attack_enterprise_edge_collection`
+* `arango_taxii_server_tests_database`
+	* `versioning_vertex_collection` (type: document collection)
+	* `versioning_edge_collection` (type: edge collection)
 
 ###### Dummy data
 
