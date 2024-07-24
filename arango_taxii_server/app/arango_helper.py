@@ -122,6 +122,9 @@ class ArangoSession:
                 "description": ctype,
                 "can_read": can_read,
                 "can_write": can_write,
+                "media_types": [
+                    "application/stix+json;version=2.1"
+                ],
             }
         return list(collections.values())
 
@@ -146,6 +149,9 @@ class ArangoSession:
             "description": ctype,
             "can_read": can_read,
             "can_write": can_write,
+            "media_types": [
+                "application/stix+json;version=2.1"
+            ],
         }
 
     def get_objects_all(self, db_name, collection_id, query_params, query_type):
