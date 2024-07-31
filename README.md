@@ -54,6 +54,15 @@ The webserver (Django) should now be running on: http://127.0.0.1:8000/
 
 You can access the Swagger UI for the API in a browser at: http://127.0.0.1:8000/api/schema/swagger-ui/
 
+#### Exporting the schema
+
+You can use the `/schema` endpoint to export the OpenAPI schema for the API and import it into other tools.
+
+For example to use the API with Postman
+
+1. http://127.0.0.1:8000/api/schema/?format=yaml
+2. import the txt file to postman, by selecting; collections > import > upload txt file downloaded at step 1
+
 #### Note on Django
 
 The webserver is Django.
@@ -79,20 +88,6 @@ It is STRONGLY recommend you seed your ArangoDB database using [stix2arango](htt
 * All vertex collections should be suffixed with `_vertex_collection` (e.g. `my_taxii_vertex_collection`)
 
 In the stix2arango README.md you will find some quick start guides that will import some common knowledgebase data into Arango which is very useful in demonstrating how your Databases and Collections should be structured to work with Arango TAXII Server.
-
-### Git submodule use
-
-We try and keep this repo in sync with the remote cve2stix / cpe2stix repos used as Git submodules when changes happen.
-
-Sometimes this is not always the case (either because we've forgot, or there are breaking changes).
-
-If it's the case we've forgotten, you can update the Git Submodules in this repo as follows:
-
-```shell
-cd stix2arango
-git checkout main
-git pull
-```
 
 ## Important design decisions
 
