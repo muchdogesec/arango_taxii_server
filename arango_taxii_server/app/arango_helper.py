@@ -103,29 +103,30 @@ class ArangoSession:
         resp = self.parse_response(self.session.get(url))
         permissions = self.get_permissions()
         collections = {}
+        collection_set = {c["name"] for c in resp.result}
         for c in resp.result:
             if c["isSystem"]:
                 continue
-            alias = c["name"]
-            title, ctype = self.split_collection_info(alias)
-            if not ctype:
+            title, _ = self.split_collection_info(c["name"])
+
+            if  not collection_set.issuperset([f"{title}_vertex_collection", f"{title}_edge_collection"]):
                 continue
             if title in collections:
-                collections[title].update(id=title, description="vertex+edge")
                 continue
             can_read, can_write = ArangoFullPermissionParser.get_permission(
-                permissions, db_name, alias
+                permissions, db_name, c["name"]
             )
             collections[title] = {
-                "id": alias,
+                "id": title,
                 "title": title,
-                "description": ctype,
+                "description": None,
                 "can_read": can_read,
                 "can_write": can_write,
                 "media_types": [
                     "application/stix+json;version=2.1"
                 ],
             }
+        # remove all collections without vertex or edge collection
         return list(collections.values())
 
     @staticmethod
