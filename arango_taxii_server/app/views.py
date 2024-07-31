@@ -308,7 +308,7 @@ class CollectionView(ArangoView, viewsets.ViewSet):
     def manifest(self, request, api_root="", collection_id=""):
         db: arango_helper.ArangoSession = request.user.arango_session
         manifest = db.get_objects_all(
-            api_root, collection_id, request.query_params, "manifest"
+            api_root, collection_id, request.query_params.dict(), "manifest"
         )
         for r in manifest.result:
             r["media_type"] = conf.media_type
