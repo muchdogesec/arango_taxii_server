@@ -12,6 +12,10 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 
 from pathlib import Path
 import os
+from textwrap import dedent
+from dotenv import load_dotenv
+
+load_dotenv()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -21,10 +25,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-kmx-hkths=on4-9097e)u9fwqm81ozrcec@o5j3q0m@=&%6q&w'
+SECRET_KEY = os.environ['DJANGO_SECRET']
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.environ['DEBUG']
 
 ALLOWED_HOSTS = []
 
@@ -149,24 +153,20 @@ REST_FRAMEWORK = {
 
 from . import conf
 SPECTACULAR_SETTINGS = {
-    'TITLE': conf.server_title,
-    'DESCRIPTION': conf.server_description,
+    'TITLE': "Arango TAXII Server API",
+    'DESCRIPTION': dedent("""
+        Arango TAXII Server is a production ready implementation of a TAXII 2.1 Server designed to work with ArangoDB.
+    """),
     'VERSION': '1.0.0',
     'CONTACT': {
-        'email': conf.server_contact_email,
-        'url': conf.server_contact_url,
-    },
-    'SERVERS':[
-        {
-        'url': conf.server_host_path
+        'email': 'noreply@dogesec.com',
+        'url': 'https://github.com/muchdogesec/arango_taxii_server',
     }
-    ],
-    # 'SERVE_INCLUDE_SCHEMA': False,
-    # OTHER SETTINGS
-    'SWAGGER_UI_DIST': "https://petstore3.swagger.io/"
 }
 
 CORS_ALLOW_ALL_ORIGINS = True # If this is used then `CORS_ALLOWED_ORIGINS` will not have any effect
 CORS_ALLOW_CREDENTIALS = True
 
 DATA_UPLOAD_MAX_MEMORY_SIZE = conf.server_max_content_length
+DEFAULT_PAGINATION_LIMIT = int(os.environ['PAGE_SIZE'])
+MAX_PAGINATION_LIMIT = 1000

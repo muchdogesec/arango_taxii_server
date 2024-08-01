@@ -1,10 +1,15 @@
 from enum import Enum
 from textwrap import dedent
+from typing import Any, Dict, List, Literal, Sequence, Tuple
 
 from drf_spectacular.extensions import OpenApiAuthenticationExtension
-from drf_spectacular.openapi import AutoSchema
-from drf_spectacular.utils import OpenApiParameter
+from drf_spectacular.openapi import AutoSchema, whitelisted
+from drf_spectacular.utils import _SchemaType, OpenApiParameter, OpenApiExample
 from drf_spectacular.types import OpenApiTypes
+from rest_framework import renderers
+from rest_framework.fields import empty
+
+from arango_taxii_server.app.utils import TaxiiEnvelope
 
 from .. import conf
 from .authentication import ArangoServerAuthentication
@@ -37,12 +42,12 @@ StixType = {
     "pattern": "^([a-z][a-z0-9]*)+(-[a-z0-9]+)*\\-?$",
     "minLength": 3,
     "maxLength": 250,
-    "description": "The type property identifies the type of STIX Object (SDO, Relationship Object, etc). The value of the type field MUST be one of the types defined by a STIX Object (e.g., indicator).",
-    "example": "ipv6-addr"
+    "description": "The type property identifies the type of STIX Object (SDO, Relationship Object, etc). The value of the type field MUST be one of the types defined by a STIX Object (e.g., `indicator`).",
+    "example": "ipv6-addr",
 }
 
 
-EnvelopeObjectsObject = {
+StixObject = {
     "type": "object",
     "format": "stix-object",
     "properties": {
@@ -80,26 +85,31 @@ TaxiiMatchType = {
 }
 
 
-added_after_query = OpenApiParameter("added_after", type=Datetime, description=dedent("""
-    A single timestamp that filters objects to only include those objects added after the specified timestamp. The value of this parameter is a timestamp.
-    """))
+added_after_query = OpenApiParameter(
+    "added_after",
+    type=Datetime,
+    description=dedent(
+        """
+    A single timestamp that filters objects to only include those objects added after the specified timestamp. This filter considers the `modified` time in an object if exists, else it considers the stix2arango `_record_modified` time. The value of this parameter is a timestamp. In the format `YYYY-MM-DDThh:mm:ss.sssZ`
+    """
+    ),
+)
 limit_query = OpenApiParameter(
-    "limit",
+    TaxiiEnvelope.page_size_query_param,
     type=int,
     description=dedent(
         """
-    A single integer value that indicates the maximum number of objects that the client would like to receive in a single response.
+    A single integer value that indicates the maximum number of objects that the client would like to receive in a single response. The default returned is `50`. `50` is also the maximum number of results that can be returned in any response.
     """
     ),
-    default=10,
 )
 
 next_query = OpenApiParameter(
-    "next",
+    TaxiiEnvelope.page_query_param,
     type=OpenApiTypes.STR,
     description=dedent(
         """
-    A single string value that indicates the next record or set of records in the dataset that the client is requesting.
+    A single string value that indicates the next record or set of records in the dataset that the client is requesting. This value can be found in the `next` property of the current response (current page). e.g. `48384495_2024-07-24T09:00:26.609560Z`
     """
     ),
 )
@@ -109,7 +119,7 @@ match_id_query = OpenApiParameter(
     type=TaxiiMatchID,
     description=dedent(
         """
-    The identifier of the object(s) that are being requested. When searching for a STIX Object, this is a STIX ID.
+    The identifier of the object(s) that are being requested. This is the STIX `id` of the object, e.g. `indicator--00ee0481-1b16-4c0c-a0e6-43f51d172a81`
     """
     ),
     style="form",
@@ -121,7 +131,7 @@ match_type_query = OpenApiParameter(
     type=TaxiiMatchType,
     description=dedent(
         """
-    The type of the object(s) that are being requested. Only the types listed in this parameter are permitted in the response.
+    The type of the object(s) that are being requested. This is the STIX `type`, e.g. `attack-pattern`
     """
     ),
     style="form",
@@ -133,14 +143,17 @@ match_version_query = OpenApiParameter(
     type=TaxiiMatchVersion,
     description=dedent(
         """
-    The version of the object(s) that are being requested. If no version parameter is provided, the server MUST
-    return the latest version of the object.
+    The version of the object(s) that are being requested. If no version parameter is provided, the latest version of the object will be returned.
+
     Valid values for the version parameter are:
+
     - `last`: requests the latest version of an object. This is the default parameter value.
     - `first`: requests the earliest version of an object
     - `all`: requests all versions of an object
-    - `<modified>`: requests a specific version of an object. For example: "2016-01-01T01:01:01.000Z" tells the server to give you the exact STIX object with a
-    modified time of "2016-01-01T01:01:01.000Z".
+    - `<modified>`: requests a specific version of an object. For example: `2016-01-01T00:00:00.000Z` tells the server to give you the exact STIX object with a
+    `modified` time of `2016-01-01T00:00:00.000Z`.
+
+    Note, for objects with a `modified` time, this value will be considered as the version. For objects without a `modified` time, the stix2arango `_record_modified` value will be used to determine version.
     """
     ),
     style="form",
@@ -150,7 +163,7 @@ match_version_query = OpenApiParameter(
 match_spec_version_query = OpenApiParameter(
     "match[spec_version]",
     type=TaxiiMatchSpecVersion,
-    description="The specification version(s) of the STIX object that are being requested.",
+    description="The specification version(s) of the STIX object that are being requested. Arango TAXII Server only support STIX 2.1, so `2.1` is not only the default value but also the only value that can be passed.",
     style="form",
     explode=False,
 )
@@ -162,12 +175,14 @@ ObjectsQueryParams = [
     match_id_query,
     match_type_query,
     match_version_query,
+    match_spec_version_query,
 ]
 
 VersionsQueryParams = [
     added_after_query,
     limit_query,
     next_query,
+    match_spec_version_query,
 ]
 
 SingleObjectQueryParams = [
@@ -175,63 +190,88 @@ SingleObjectQueryParams = [
     limit_query,
     next_query,
     match_version_query,
+    match_spec_version_query,
 ]
+
+ObjectDeleteParams = [
+    match_version_query,
+    match_spec_version_query,
+]
+
+
+class ArangoTaxiiOpenApiExample(OpenApiExample):
+    def __init__(self, *args, **kwargs):
+        kwargs["media_type"] = conf.taxii_type
+        super().__init__(*args, **kwargs)
 
 
 class OpenApiTags(Enum):
     API_ROOT = {
         "name": "Taxii API - Server Information",
-        "description": dedent("""
+        "description": dedent(
+            """
         Information about this TAXII Server, the available API Roots, and to retrieve the status of requests.
-        """)
+        """
+        ),
     }
     COLLECTIONS = {
         "name": "Taxii API - Collections",
-        "description": dedent("""
+        "description": dedent(
+            """
         Collections are hosted in the context of an API Root. Each API Root MAY have zero or more Collections. As with other TAXII Endpoints, the ability of TAXII Clients to read from and write to Collections can be restricted depending on their permissions level.
-        """)
+        """
+        ),
     }
     SCHEMA = {
         "name": "schema",
-        "description": dedent("""
+        "description": dedent(
+            """
         Export the TAXII schema to use in other tooling.
-        """)
+        """
+        ),
     }
 
     @property
     def tags(self):
-        return [self.value['name']]
+        return [self.value["name"]]
 
     @classmethod
     def all(cls):
         return [v.value for v in cls.__members__.values()]
 
-from drf_spectacular.settings import spectacular_settings
-spectacular_settings.apply_patches({'TAGS': OpenApiTags.all()})
 
+from drf_spectacular.settings import spectacular_settings
+
+spectacular_settings.apply_patches({"TAGS": OpenApiTags.all()})
 
 
 class CustomAutoSchema(AutoSchema):
-    global_params = [
-        OpenApiParameter(
-            name="Accept",
-            type=dict(enum=[conf.taxii_type]),
-            location=OpenApiParameter.HEADER,
-            required=True,
-        ),
-        OpenApiParameter(
-            name="Content-Type",
-            location=OpenApiParameter.HEADER,
-            response=True,
-            required=True,
-            default=conf.taxii_type
-        ),
-    ]
+    global_params = []
     url_path_params = {
-        'collection_id': OpenApiParameter('collection_id', type=str, location=OpenApiParameter.PATH, description="The identifier of the Collection being requested."),
-        'api_root': OpenApiParameter('api_root', type=str, location=OpenApiParameter.PATH, description="The API Root name. Do not include the full URL."),
-        'object_id': OpenApiParameter('object_id', type=str, location=OpenApiParameter.PATH, description="The STIX ID of the object being requested."),
-        'status_id': OpenApiParameter('status_id', type=OpenApiTypes.UUID, location=OpenApiParameter.PATH, description="The ID of the object being requested"),
+        "collection_id": OpenApiParameter(
+            "collection_id",
+            type=str,
+            location=OpenApiParameter.PATH,
+            description="The identifier of the Collection being requested. You can get a Collection ID from the GET Collections for an API Root endpoint.",
+        ),
+        "api_root": OpenApiParameter(
+            "api_root",
+            type=str,
+            location=OpenApiParameter.PATH,
+            description="The API Root name. Do not include the full URL. e.g. use `my_api_root` NOT `http://127.0.0.1:8000/api/taxii2/my_api_root/`",
+        ),
+        "object_id": OpenApiParameter(
+            "object_id",
+            type=str,
+            location=OpenApiParameter.PATH,
+            description="The STIX ID of the object being requested. e.g. `indicator--00ee0481-1b16-4c0c-a0e6-43f51d172a81`. You can search for objects using the GET objects in a Collection endpoint.",
+        ),
+        "status_id": OpenApiParameter(
+            "status_id",
+            type=OpenApiTypes.UUID,
+            location=OpenApiParameter.PATH,
+            description="The status ID of the job being requested. The status ID is obtained in a successful response from the POST objects endpoint.",
+        ),
     }
 
     def get_override_parameters(self):
@@ -241,12 +281,33 @@ class CustomAutoSchema(AutoSchema):
                 params.append(param)
         if "taxii2/" not in self.path:
             return params
-        
+
         return params + self.global_params
 
     def _is_list_view(self, *args, **kwargs):
+        if getattr(self.view, "pagination_class", None):
+            print(self.method, self.path)
+            return True
         return False
-                
+
+    def map_renderers(self, attribute: str) -> list[Any]:
+        assert attribute in ["media_type", "format"]
+
+        # Either use whitelist or default back to old behavior by excluding BrowsableAPIRenderer
+        def use_renderer(r):
+            if spectacular_settings.RENDERER_WHITELIST is not None:
+                return whitelisted(r, spectacular_settings.RENDERER_WHITELIST)
+            else:
+                return not isinstance(r, renderers.BrowsableAPIRenderer)
+
+        keys = []
+        for r in self.view.get_renderers():
+            if use_renderer(r) and hasattr(r, attribute):
+                media_type = getattr(r, attribute)
+                keys.append(media_type)
+
+        return keys
+
 
 class ArangoServerAuthenticationScheme(OpenApiAuthenticationExtension):
     target_class = ArangoServerAuthentication

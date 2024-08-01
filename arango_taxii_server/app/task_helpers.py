@@ -1,61 +1,42 @@
 from datetime import timedelta, timezone, datetime
+import os
 import subprocess
 import tempfile
-from .import models
+from . import models
 from celery import shared_task, group
 import logging
 import json
 from . import arango_helper
-
-
-@shared_task
-def start_task(task_id):
-    task_group = []
-    for object in models.ObjectStatus.objects.filter(task_id=task_id):
-        task_group.append(insert_one_object.s(object.pk))
-    job = group(task_group) | schedule_removal.s(task_id)
-    job.apply_async()
-    
+from stix2arango.stix2arango import Stix2Arango
 
 @shared_task
-def insert_one_object(pk):
-    obj = models.ObjectStatus.objects.get(pk=pk)
-    db = arango_helper.ArangoSession((obj.task.username, obj.task.password))
-    object_dict = json.loads(obj.stix_data_json)
-
-    bundle = {
-            'type': 'bundle',
-            'id': f'bundle--{obj.task.id}',
-            'objects': [object_dict],
-        }
-    status = models.Status.COMPLETE
-    message = None
-    with tempfile.NamedTemporaryFile('w', delete=True) as f:
-        try:
-            json.dump(bundle, f)
-            f.flush()
-            db.stix2arango(obj.task.db, obj.task.collection, f.name, obj.task.id)
-        except subprocess.CalledProcessError as e:
-            status = models.Status.FAILED
-            message = f"stix2arango failed with return code: {e.returncode}"
-        except Exception as e:
-            status = models.Status.FAILED
-            message = f"{e}"
+def upload_all(task_id, username, password, objects):
+    task = models.UploadTask.objects.get(id=task_id)
+    bundle_id = f"bundle--{task_id}"
     
-    obj.message = message
-    obj.status = status
-    obj.save()
+    db = Stix2Arango(task.db, task.collection, file=None, stix2arango_note=f"arango_taxii_status_id={task_id}", bundle_id=bundle_id, username=username, password=password, host_url=os.environ["ARANGODB"])
+
+    try:
+        db.run(dict(type="bundle", id=bundle_id, objects=objects))
+        task.uploads.update(status=models.Status.COMPLETE)
+    except Exception as e:
+        logging.info(e, exc_info=True)
+        task.uploads.update(status=models.Status.FAILED, message=str(e))
+    schedule_removal.s(task_id)
+
 
 @shared_task
 def schedule_removal(_, task_id):
-    #automatically remove task after 24 hours
+    # automatically remove task after 24 hours
     tomorrow = datetime.now(timezone.utc) + timedelta(days=1)
-    logging.info(f"Scheduling removal of task with status-id: `{task_id}` at {tomorrow}")
+    logging.info(
+        f"Scheduling removal of task with status-id: `{task_id}` at {tomorrow}"
+    )
     remove_completed_task.apply_async((task_id,), eta=tomorrow)
+
 
 @shared_task
 def remove_completed_task(task_id):
     logging.info(f"Removing task with status-id: `{task_id}`")
     task = models.UploadTask.objects.get(pk=task_id)
     task.delete()
-
