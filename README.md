@@ -4,6 +4,10 @@
 
 Arango TAXII Server is a production ready implementation of a TAXII 2.1 Server designed to work with ArangoDB.
 
+## tl;dr
+
+[![Arango TAXII Server](https://img.youtube.com/vi/tYWOy-S457s/0.jpg)](https://www.youtube.com/watch?v=tYWOy-S457s)
+
 ## Install
 
 ### Download and configure
