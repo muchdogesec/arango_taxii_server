@@ -2,6 +2,8 @@
 
 ## Overview
 
+![](docs/arango_taxii_server.png)
+
 Arango TAXII Server is a production ready implementation of a TAXII 2.1 Server designed to work with ArangoDB.
 
 ## tl;dr
@@ -76,7 +78,7 @@ The webserver is Django.
 To create an admin user in Django
 
 ```shell
-sudo docker-compose run django python manage.py createsuperuser
+sudo docker compose run django python manage.py createsuperuser
 ```
 
 There is currently no Django admin UI.
