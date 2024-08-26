@@ -8,6 +8,8 @@ Arango TAXII Server is a production ready implementation of a TAXII 2.1 Server d
 
 [![Arango TAXII Server](https://img.youtube.com/vi/tYWOy-S457s/0.jpg)](https://www.youtube.com/watch?v=tYWOy-S457s)
 
+[Watch the demo](https://www.youtube.com/watch?v=tYWOy-S457s).
+
 ## Install
 
 ### Download and configure
@@ -247,4 +249,4 @@ For everyone else, [minimal support provided via the DOGESEC community](https://
 
 ## License
 
-[AGPLv3](/LICENSE).
+[Apache 2.0](/LICENSE).
