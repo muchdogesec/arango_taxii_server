@@ -1,1 +1,2 @@
 schemathesis
+https://github.com/muchdogesec/stix2arango/archive/main.zip?v=kz

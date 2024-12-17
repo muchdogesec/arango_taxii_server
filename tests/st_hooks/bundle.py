@@ -91,22 +91,23 @@ def after_load_schema(
     schema: BaseOpenAPISchema,):
     logging.info("Running stix2arango")
     
-    from stix2arango.stix2arango import Stix2Arango
-    username = os.getenv('ARANGODB_USERNAME')
-    password = os.getenv('ARANGODB_PASSWORD')
+    username = os.getenv('ARANGODB_USERNAME', 'root')
+    password = os.getenv('ARANGODB_PASSWORD', '')
+
+    @schema.auth()
+    class MyAuth:
+        def get(self, case, context):
+            return True
+
+        def set(self, case, data, context):
+            case.headers = case.headers or {}
+
+            token = b64encode(f"{username}:{password}".encode('utf-8')).decode("ascii")
+            case.headers["Authorization"] = f'Basic {token}'
+
     try:
+        from stix2arango.stix2arango import Stix2Arango
         Stix2Arango(database=TEST_DB, collection=TEST_COLLECTION, file=None, host_url=os.getenv('ARANGODB_HOST_URL'), username=username, password=password)
-
-        @schema.auth()
-        class MyAuth:
-            def get(self, case, context):
-                return True
-
-            def set(self, case, data, context):
-                case.headers = case.headers or {}
-
-                token = b64encode(f"{username}:{password}".encode('utf-8')).decode("ascii")
-                case.headers["Authorization"] = f'Basic {token}'
     except:
         logging.info("failed to auth")
     
