@@ -159,10 +159,9 @@ class ArangoSession:
         url = urljoin(self.HOST_URL, f"/_db/{db_name}/_api/cursor/")
         payload = None
         if next := query_params.get("next"):
-            cursor_id, added_after = next.split("_")
-            query_params['added_after'] = added_after
-        #     url = urljoin(url, cursor_id)
-        # else:
+            splits = next.split("_")
+            query_params['added_after'] = splits[-1]
+
         payload = self.build_query(collection_id, query_params, query_type)
         resp = self.parse_response(self.session.post(url, json=payload))
 

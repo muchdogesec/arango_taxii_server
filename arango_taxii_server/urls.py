@@ -2,7 +2,15 @@ from django.urls import include, path, re_path
 from rest_framework import routers
 from drf_spectacular.views import SpectacularAPIView, SpectacularRedocView, SpectacularSwaggerView
 
+from arango_taxii_server import conf
 from arango_taxii_server.app import views
+
+from django.http import JsonResponse
+def handler404(*args, **kwargs):
+    return JsonResponse(dict(http_status=str(404), title='non-existent page'), status=404, content_type=conf.taxii_type)
+
+def handler500(*args, **kwargs):
+    return JsonResponse(dict(http_status=str(500), title='internal server error'), status=500, content_type=conf.taxii_type)
 
 
 router = routers.SimpleRouter(trailing_slash=True)
