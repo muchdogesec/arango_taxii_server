@@ -49,7 +49,7 @@ class APIRootSerializer(serializers.Serializer):
 class SingleCollectionSerializer(serializers.Serializer):
     id = serializers.CharField()
     title = serializers.CharField()
-    description = serializers.CharField()
+    description = serializers.CharField(required=False, allow_null=True)
     can_read = serializers.BooleanField(default=False)
     can_write = serializers.BooleanField(default=False)
     media_types = serializers.ListField(

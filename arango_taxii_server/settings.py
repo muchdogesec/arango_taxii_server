@@ -28,10 +28,15 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.environ['DJANGO_SECRET']
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.environ['DEBUG']
+DEBUG = os.environ['DJANGO_DEBUG']
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = os.getenv('DJANGO_ALLOWED_HOSTS', "localhost 127.0.0.1 [::1]").split()
 
+CORS_ALLOW_ALL_ORIGINS = True # If this is used then `CORS_ALLOWED_ORIGINS` will not have any effect
+CORS_ALLOW_CREDENTIALS = True
+
+#CORS_ALLOW_ALL_ORIGINS = os.environ.get('DJANGO_CORS_ALLOW_ALL_ORIGINS', True)
+#CORS_ALLOWED_ORIGINS = [os.environ.get('DJANGO_CORS_ALLOWED_ORIGINS', "http://127.0.0.1:8001")]
 
 # Application definition
 
@@ -91,15 +96,14 @@ DATABASES = {
         'NAME': os.getenv('POSTGRES_DB'),            # Database name
         'USER': os.getenv('POSTGRES_USER'),          # Database user
         'PASSWORD': os.getenv('POSTGRES_PASSWORD'),  # Database password
-        'HOST': 'pgdb',                              # PostgreSQL service name in Docker Compose
-        'PORT': '5432',                              # PostgreSQL default port
+        'HOST': os.getenv('POSTGRES_HOST', 'pgdb'),          # PostgreSQL service name in Docker Compose
+        'PORT': os.getenv('POSTGRES_PORT', '5432'),  # PostgreSQL default port
     },
     'sqlite': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': BASE_DIR / 'db.sqlite3',
     },
 }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/5.0/ref/settings/#auth-password-validators
@@ -164,9 +168,6 @@ SPECTACULAR_SETTINGS = {
     }
 }
 
-CORS_ALLOW_ALL_ORIGINS = True # If this is used then `CORS_ALLOWED_ORIGINS` will not have any effect
-CORS_ALLOW_CREDENTIALS = True
-
 DATA_UPLOAD_MAX_MEMORY_SIZE = conf.server_max_content_length
-DEFAULT_PAGINATION_LIMIT = int(os.environ['PAGE_SIZE'])
-MAX_PAGINATION_LIMIT = 1000
+DEFAULT_PAGINATION_LIMIT = int(os.environ['DEFAULT_PAGE_SIZE'])
+MAX_PAGINATION_LIMIT = int(os.environ['MAX_PAGE_SIZE'])

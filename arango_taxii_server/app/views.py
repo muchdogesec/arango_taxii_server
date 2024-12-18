@@ -485,7 +485,7 @@ class ObjectView(ArangoView, viewsets.ViewSet):
         tags=open_api_schemas.OpenApiTags.COLLECTIONS.tags,
         summary="Delete a specific object from a collection",
         responses={
-            (200, TaxiiJSONRenderer.media_type): open_api_schemas.OpenApiTypes.NONE,
+            (200, TaxiiJSONRenderer.media_type): {},
             **serializers.TaxiiErrorSerializer.error_responses([
                 (400, "The server did not understand the request"),
                 (401, "The client needs to authenticate. If no authorization header is passed then you will receive this error."),

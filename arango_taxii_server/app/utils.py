@@ -27,7 +27,7 @@ class Response(response.Response):
 class ErrorResp(Response):
     def __init__(self, status, title, details=None):
         super().__init__(
-            {"title": title, "http_status": status, "details": dict(content=details)},
+            {"title": title, "http_status": str(status), "details": dict(content=details)},
             status=status,
         )
 
@@ -68,6 +68,7 @@ class TaxiiEnvelope(pagination.PageNumberPagination):
                 "next": {
                     "type": "string",
                     "example": "112121_2",
+                    "nullable": True
                 },
                 self.results_key: schema,
             },

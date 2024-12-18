@@ -1,0 +1,2 @@
+schemathesis
+https://github.com/muchdogesec/stix2arango/releases/download/main-2024-12-12-11-55-14/stix2arango-0.0.2-py3-none-any.whl
