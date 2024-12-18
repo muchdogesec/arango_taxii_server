@@ -14,7 +14,7 @@ def upload_all(task_id, username, password, objects):
     task = models.UploadTask.objects.get(id=task_id)
     bundle_id = f"bundle--{task_id}"
     
-    db = Stix2Arango(task.db, task.collection, file=None, stix2arango_note=f"arango_taxii_status_id={task_id}", bundle_id=bundle_id, username=username, password=password, host_url=os.environ["ARANGODB"])
+    db = Stix2Arango(task.db, task.collection, file=None, stix2arango_note=f"arango_taxii_status_id={task_id}", bundle_id=bundle_id, username=username, password=password, host_url=os.environ["ARANGODB_HOST_URL"])
 
     try:
         db.run(dict(type="bundle", id=bundle_id, objects=objects))

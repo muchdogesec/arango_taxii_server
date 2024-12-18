@@ -51,7 +51,7 @@ class ArangoFullPermissionParser:
 
 
 class ArangoSession:
-    HOST_URL = os.environ["ARANGODB"]
+    HOST_URL = os.environ["ARANGODB_HOST_URL"]
 
     def __init__(self, arango_auth) -> None:
         self.user, self.password = arango_auth
