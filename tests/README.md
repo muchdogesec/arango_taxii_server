@@ -6,7 +6,7 @@
 python3 -m venv arango_taxii_server-venv
 source arango_taxii_server-venv/bin/activate
 # install requirements
-pip install -r requirements_dev.txt
+pip3 install -r requirements_dev.txt
 ```
 
 ### set environment variables
@@ -15,8 +15,8 @@ For it to work correctly and test everything, you need to set the following env 
 
 ```env
 ARANGODB_HOST_URL=http://localhost:8529
-ARANGODB_USERNAME={value}
-ARANGODB_PASSWORD={value}
+ARANGODB_USERNAME=USERNAME
+ARANGODB_PASSWORD=PASSWORD
 SCHEMATHESIS_HOOKS=tests.st_hooks.links
 ```
 
