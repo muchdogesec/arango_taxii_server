@@ -58,6 +58,18 @@ class ArangoSession:
         self.session = requests.Session()
         self.session.auth = arango_auth
 
+    def make_request(self, method, url, **kwargs):
+        try:
+            response = self.session.request(method, url, **kwargs)
+            resp = ArangoResponse(response)
+            if resp.error:
+                raise resp.error
+            return resp
+        except ArangoError:
+            raise
+        except Exception as e:
+            raise ArangoError(400, "adb could not process request")
+
     def is_authorized(self, db_name=None):
         try:
             return self.verify_auth(db_name)
@@ -74,7 +86,7 @@ class ArangoSession:
 
     def get_permissions(self, db_name=None):
         url = urljoin(self.HOST_URL, f"/_api/user/{self.user}/database")
-        resp = self.parse_response(self.session.get(url, params=dict(full=1)))
+        resp = self.make_request("GET", url, params=dict(full=1))
         retval = resp.result
         return retval
 
@@ -82,25 +94,25 @@ class ArangoSession:
         url = urljoin(
             self.HOST_URL, f"/_api/user/{self.user}/database/{db_name}/{collection}"
         )
-        resp = self.parse_response(self.session.get(url, params=dict(full=1)))
+        resp = self.make_request('GET', url, params=dict(full=1))
         retval = resp.result
         return ArangoFullPermissionParser.parse_permission(retval)
 
     def get_databases(self):
         url = urljoin(self.HOST_URL, f"/_api/user/{self.user}/database")
-        resp = self.parse_response(self.session.get(url))
+        resp = self.make_request('GET', url)
         return list(resp.result.keys())
 
     def get_database(self, db_name):
         url = urljoin(
             self.HOST_URL, f"/_db/{db_name}/_api/user/{self.user}/database/{db_name}"
         )
-        resp = self.parse_response(self.session.get(url))
+        resp = self.make_request('GET', url)
         return self.parse_permission(resp.result)
 
     def get_collections(self, db_name):
         url = urljoin(self.HOST_URL, f"/_db/{db_name}/_api/collection")
-        resp = self.parse_response(self.session.get(url))
+        resp = self.make_request('GET', url)
         permissions = self.get_permissions()
         collections = {}
         collection_set = {c["name"] for c in resp.result}
@@ -142,7 +154,7 @@ class ArangoSession:
         if not ctype:
             collection_id = f"{collection_id}_vertex_collection"
         url = urljoin(self.HOST_URL, f"/_db/{db_name}/_api/collection/{collection_id}")
-        resp = self.parse_response(self.session.get(url))
+        resp = self.make_request('GET', url)
         can_read, can_write = self.get_collection_permission(db_name, alias)
         return {
             "id": alias,
@@ -163,7 +175,7 @@ class ArangoSession:
             query_params['added_after'] = splits[-1]
 
         payload = self.build_query(collection_id, query_params, query_type)
-        resp = self.parse_response(self.session.post(url, json=payload))
+        resp = self.make_request('POST', url, json=payload)
 
         # delete _record_modified and add set first and last dates
         if resp.result:
@@ -211,19 +223,17 @@ class ArangoSession:
         RETURN doc
         """
         url = urljoin(self.HOST_URL, f"/_db/{db_name}/_api/cursor/")
-        resp = self.parse_response(
-            self.session.post(
-                url,
-                json=dict(
-                    query=AQL,
-                    bindVars={
-                        "object_id": object_id,
-                        "@vertex_collection": vertex,
-                        "@edge_collection": edge,
-                        "spec_versions": match_spec_version.split(","),
-                    },
-                ),
-            )
+        resp = self.make_request('POST', 
+            url,
+            json=dict(
+                query=AQL,
+                bindVars={
+                    "object_id": object_id,
+                    "@vertex_collection": vertex,
+                    "@edge_collection": edge,
+                    "spec_versions": match_spec_version.split(","),
+                },
+            ),
         )
 
         versions = (match_version or "all").split(",")
@@ -257,19 +267,18 @@ class ArangoSession:
         """
 
         url = urljoin(self.HOST_URL, f"/_db/{db_name}/_api/cursor/")
-        resp = self.parse_response(
-            self.session.post(
-                url,
-                json=dict(
-                    query=DELETE_AQL,
-                    bindVars={
-                        "object_ids": objects_to_remove,
-                        "@vertex_collection": vertex,
-                        "@edge_collection": edge,
-                    },
-                ),
-            )
+        resp = self.make_request('POST', 
+            url,
+            json=dict(
+                query=DELETE_AQL,
+                bindVars={
+                    "object_ids": objects_to_remove,
+                    "@vertex_collection": vertex,
+                    "@edge_collection": edge,
+                },
+            ),
         )
+        
         return resp
 
     def build_query(self, collection, query_params, req_type="manifest"):
