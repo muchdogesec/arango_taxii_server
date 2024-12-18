@@ -42,6 +42,6 @@ uritemplate==4.1.1; python_version >= '3.6'
 urllib3==2.2.1; python_version >= '3.8'
 vine==5.1.0; python_version >= '3.6'
 wcwidth==0.2.13
-zipp==3.18.2; python_version >= '3.8'
+zipp==3.19.1; python_version >= '3.8'
 pytest==8.2.2; python_version >= '3.8'
 https://github.com/muchdogesec/stix2arango/releases/download/main-2024-12-12-11-55-14/stix2arango-0.0.2-py3-none-any.whl
