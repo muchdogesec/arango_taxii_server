@@ -22,12 +22,12 @@ router.register(r'status', views.StatusView, "api-root-status-view")
 # Wire up our API using automatic URL routing.
 # Additionally, we include login URLs for the browsable API.
 urlpatterns = [
-    path('taxii2/', views.ServerInfoView.as_view()),
-    path('taxii2/<slug:api_root>/', include(router.urls), name="api-root"),
+    path('taxii2/', views.ServerInfoView.as_view(), name='taxii-server-discovery'),
+    path('taxii2/<slug:api_root>/', include(router.urls), name="taxii-server-api-root"),
     # <>
     # SWAGGER
-    path('schema/', views.SchemaView.as_view(), name='schema'),
+    path('schema/', views.SchemaView.as_view(), name='taxii-server-schema'),
     # Optional UI:
-    path('schema/swagger-ui/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
-    path('schema/redoc/', SpectacularRedocView.as_view(url_name='schema'), name='redoc'),
+    path('schema/swagger-ui/', SpectacularSwaggerView.as_view(url_name='taxii-server-schema'), name='swagger-ui'),
+    path('schema/redoc/', SpectacularRedocView.as_view(url_name='taxii-server-schema'), name='redoc'),
 ]

@@ -13,11 +13,13 @@ ARANGO_TAXII_DEFAULTS: dict[str, any] = {
     'DEFAULT_PAGINATION_LIMIT': 50,
     'MAX_PAGINATION_LIMIT': 200,
     'SUPPORT_WRITE_OPERATIONS': True,
-    'AUTHENTICATION_CLASSES': ['arango_taxii_server.app.authentication.ArangoServerAuthentication'],
+    'ARANGODB_HOST_URL': None,
+    'AUTHENTICATION_CLASSES': [],
     'PERMISSION_CLASSES': ['arango_taxii_server.app.views.APIRootAuthentication'],
     # 'COLLECTION_PERMISSION_CLASSES': ['arango_taxii_server.app.views.APIRootAuthentication', 'arango_taxii_server.app.views.CollectionAuthentication'],
     'FILTER_COLLECTIONS': 'arango_taxii_server.app.views.noop_filter',
     'FILTER_API_ROOTS': 'arango_taxii_server.app.views.noop_filter',
+    'ARANGO_AUTH_FUNCTION': None,
 }
 
 IMPORT_STRINGS = [
@@ -26,6 +28,7 @@ IMPORT_STRINGS = [
     # 'COLLECTION_PERMISSION_CLASSES',
     'FILTER_COLLECTIONS',
     'FILTER_API_ROOTS',
+    'ARANGO_AUTH_FUNCTION',
 ]
 
 class ArangoTaxiiServerSettings(APISettings):

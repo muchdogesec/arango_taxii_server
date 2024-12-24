@@ -170,4 +170,6 @@ ARANGO_TAXII_SETTINGS = {
     'CONTACT_EMAIL': os.getenv('SERVER_EMAIL', 'noreply@dogesec.com'),
     'DEFAULT_PAGINATION_LIMIT': int(os.environ['DEFAULT_PAGE_SIZE']),
     'MAX_PAGINATION_LIMIT': int(os.environ['MAX_PAGE_SIZE']),
+    'ARANGODB_HOST_URL': os.getenv('ARANGODB_HOST_URL'),
+    # 'FILTER_COLLECTIONS': 'arango_taxii_server.app.views.filter_collections'
 }

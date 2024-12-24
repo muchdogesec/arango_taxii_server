@@ -54,7 +54,7 @@ class ArangoFullPermissionParser:
 
 
 class ArangoSession:
-    HOST_URL = os.environ["ARANGODB_HOST_URL"]
+    HOST_URL = arango_taxii_server_settings.ARANGODB_HOST_URL
 
     def __init__(self, arango_auth) -> None:
         self.user, self.password = arango_auth
@@ -71,7 +71,7 @@ class ArangoSession:
         except ArangoError:
             raise
         except Exception as e:
-            raise ArangoError(400, "adb could not process request")
+            raise ArangoError(400, "arangodb could not process request")
 
     def is_authorized(self, db_name=None):
         try:

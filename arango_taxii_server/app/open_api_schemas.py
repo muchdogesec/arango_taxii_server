@@ -261,6 +261,9 @@ class CustomAutoSchema(AutoSchema):
             print(self.method, self.path)
             return True
         return False
+    
+    def is_excluded(self):
+        return super().is_excluded() or getattr(self.view, 'is_arango_taxii_server_view', None)
 
     def map_renderers(self, attribute: str) -> list[Any]:
         assert attribute in ["media_type", "format"]
