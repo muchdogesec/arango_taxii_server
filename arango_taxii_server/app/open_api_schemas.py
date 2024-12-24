@@ -206,44 +206,16 @@ class ArangoTaxiiOpenApiExample(OpenApiExample):
 
 
 class OpenApiTags(Enum):
-    API_ROOT = {
-        "name": "Taxii API - Server Information",
-        "description": dedent(
-            """
-        Information about this TAXII Server, the available API Roots, and to retrieve the status of requests.
-        """
-        ),
-    }
-    COLLECTIONS = {
-        "name": "Taxii API - Collections",
-        "description": dedent(
-            """
-        Collections are hosted in the context of an API Root. Each API Root MAY have zero or more Collections. As with other TAXII Endpoints, the ability of TAXII Clients to read from and write to Collections can be restricted depending on their permissions level.
-        """
-        ),
-    }
-    SCHEMA = {
-        "name": "schema",
-        "description": dedent(
-            """
-        Export the TAXII schema to use in other tooling.
-        """
-        ),
-    }
+    API_ROOT = "Taxii API - Server Information"
+    COLLECTIONS = "Taxii API - Collections"
+    SCHEMA = "schema"
 
     @property
     def tags(self):
-        return [self.value["name"]]
-
-    @classmethod
-    def all(cls):
-        return [v.value for v in cls.__members__.values()]
+        return [self.value]
 
 
 from drf_spectacular.settings import spectacular_settings
-
-spectacular_settings.apply_patches({"TAGS": OpenApiTags.all()})
-
 
 class CustomAutoSchema(AutoSchema):
     global_params = []

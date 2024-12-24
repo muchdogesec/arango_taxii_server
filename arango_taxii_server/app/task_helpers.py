@@ -7,7 +7,13 @@ from celery import shared_task, group
 import logging
 import json
 from . import arango_helper
-from stix2arango.stix2arango import Stix2Arango
+from .settings import arango_taxii_server_settings
+
+if arango_taxii_server_settings.SUPPORT_WRITE_OPERATIONS:
+    try:
+        from stix2arango.stix2arango import Stix2Arango
+    except Exception as e:
+        raise Exception("stix2arango is needed, consider installing stix2arango or arango_taxii_server[full]") from e
 
 @shared_task
 def upload_all(task_id, username, password, objects):

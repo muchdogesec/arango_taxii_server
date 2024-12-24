@@ -4,8 +4,8 @@ import random
 import re
 import subprocess
 from urllib.parse import urljoin, urlparse
-from django.conf import settings
 from datetime import datetime
+from .settings import arango_taxii_server_settings
 
 import requests
 
@@ -41,13 +41,16 @@ class ArangoFullPermissionParser:
 
     @classmethod
     def parse_permission(cls, value):
-        p = None
+        p = (False, False)
 
         if isinstance(value, str):
             p = cls.permissions_map[value]
         elif isinstance(value, dict):
             p = cls.parse_permission(value["permission"])
-        return p
+        can_read, can_write = p
+        if not arango_taxii_server_settings.SUPPORT_WRITE_OPERATIONS:
+            can_write = False
+        return can_read, can_write
 
 
 class ArangoSession:
@@ -342,7 +345,7 @@ class ArangoSession:
 
         retval = {"bindVars": binding}
 
-        batchSize = int(query_params.get("limit", settings.DEFAULT_PAGINATION_LIMIT))
+        batchSize = int(query_params.get("limit", arango_taxii_server_settings.DEFAULT_PAGINATION_LIMIT))
         retval["batchSize"] = batchSize
         binding['limit'] = batchSize + 1
 
