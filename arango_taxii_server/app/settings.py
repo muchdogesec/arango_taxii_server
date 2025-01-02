@@ -20,6 +20,7 @@ ARANGO_TAXII_DEFAULTS: dict[str, any] = {
     'FILTER_COLLECTIONS': 'arango_taxii_server.app.views.noop_filter',
     'FILTER_API_ROOTS': 'arango_taxii_server.app.views.noop_filter',
     'ARANGO_AUTH_FUNCTION': None,
+    'SPECTACULAR_KWARGS': {},
 }
 
 IMPORT_STRINGS = [

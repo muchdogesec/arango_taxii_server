@@ -258,12 +258,13 @@ class CustomAutoSchema(AutoSchema):
 
     def _is_list_view(self, *args, **kwargs):
         if getattr(self.view, "pagination_class", None):
-            print(self.method, self.path)
             return True
         return False
     
     def is_excluded(self):
-        return super().is_excluded() or getattr(self.view, 'is_arango_taxii_server_view', None)
+        if getattr(self.view, 'is_arango_taxii_server_view', None):
+            return getattr(self.view, 'schema_exclude', True) #only show if we're using our generator
+        return super().is_excluded()
 
     def map_renderers(self, attribute: str) -> list[Any]:
         assert attribute in ["media_type", "format"]

@@ -115,7 +115,7 @@ class APIRootAuthentication(permissions.IsAuthenticated):
 class ArangoView(views.APIView):
     permission_classes = arango_taxii_server_settings.PERMISSION_CLASSES
     renderer_classes = [TaxiiJSONRenderer]
-    if arango_taxii_server_settings.AUTHENTICATION_CLASSES:
+    if arango_taxii_server_settings.AUTHENTICATION_CLASSES != None:
         authentication_classes = arango_taxii_server_settings.AUTHENTICATION_CLASSES
     schema = open_api_schemas.CustomAutoSchema()
     is_arango_taxii_server_view = True
@@ -583,6 +583,7 @@ class AtsSchemaGenerator(SchemaGenerator):
             _, _, _, view = endpoint
             if not getattr(view, 'is_arango_taxii_server_view', None):
                 continue
+            view.schema_exclude = False
             endpoints.append(endpoint)
         return endpoints
 
@@ -612,6 +613,9 @@ class SchemaView(SpectacularAPIView):
                 """
                 ),
             },
-        ]
+        ],
+        **arango_taxii_server_settings.SPECTACULAR_KWARGS,
     }
     generator_class = AtsSchemaGenerator
+    if arango_taxii_server_settings.AUTHENTICATION_CLASSES != None:
+        authentication_classes = arango_taxii_server_settings.AUTHENTICATION_CLASSES
