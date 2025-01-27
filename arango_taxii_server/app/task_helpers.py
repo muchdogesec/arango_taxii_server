@@ -7,14 +7,20 @@ from celery import shared_task, group
 import logging
 import json
 from . import arango_helper
-from stix2arango.stix2arango import Stix2Arango
+from .settings import arango_taxii_server_settings
+
+if arango_taxii_server_settings.SUPPORT_WRITE_OPERATIONS:
+    try:
+        from stix2arango.stix2arango import Stix2Arango
+    except Exception as e:
+        raise Exception("stix2arango is needed, consider installing stix2arango or arango_taxii_server[full]") from e
 
 @shared_task
 def upload_all(task_id, username, password, objects):
     task = models.UploadTask.objects.get(id=task_id)
     bundle_id = f"bundle--{task_id}"
     
-    db = Stix2Arango(task.db, task.collection, file=None, stix2arango_note=f"arango_taxii_status_id={task_id}", bundle_id=bundle_id, username=username, password=password, host_url=os.environ["ARANGODB_HOST_URL"])
+    db = Stix2Arango(task.db, task.collection, file=None, stix2arango_note=f"arango_taxii_status_id={task_id}", bundle_id=bundle_id, username=username, password=password, host_url=arango_taxii_server_settings.ARANGODB_HOST_URL)
 
     try:
         db.run(dict(type="bundle", id=bundle_id, objects=objects))

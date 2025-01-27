@@ -9,7 +9,7 @@ from rest_framework import serializers
 from .. import conf
 from .open_api_schemas import StixObject, ArangoTaxiiOpenApiExample
 from . import models
-
+from .settings import arango_taxii_server_settings
 
 class SerializerBase(serializers.Serializer):
     @property
@@ -30,15 +30,15 @@ class SerializerBase(serializers.Serializer):
 
 
 class ServerInfoSerializer(serializers.Serializer):
-    title = serializers.CharField(default=conf.server_title)
-    description = serializers.CharField(default=conf.server_description)
-    contact = serializers.EmailField(default=conf.server_contact_email)
+    title = serializers.CharField(default=arango_taxii_server_settings.SERVER_TITLE)
+    description = serializers.CharField(default=arango_taxii_server_settings.SERVER_DESCRIPTION)
+    contact = serializers.EmailField(default=arango_taxii_server_settings.CONTACT_URL)
     api_roots = serializers.ListField(child=serializers.CharField())
 
 
 class APIRootSerializer(serializers.Serializer):
     max_content_length = serializers.IntegerField(
-        default=conf.server_max_content_length
+        default=arango_taxii_server_settings.MAX_CONTENT_LENGTH
     )
     title = serializers.CharField(required=True)
     versions = serializers.ListField(

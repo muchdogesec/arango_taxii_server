@@ -19,6 +19,8 @@ from rest_framework import (
     exceptions,
 )
 from rest_framework.request import Request
+from drf_spectacular.views import SpectacularAPIView
+from drf_spectacular.settings import spectacular_settings
 
 # from rest_framework.response import Response
 from rest_framework import renderers, parsers
@@ -30,6 +32,7 @@ from .. import conf
 from . import arango_helper, open_api_schemas, serializers, models
 from .serializers import ServerInfoSerializer
 import textwrap
+from .settings import arango_taxii_server_settings
 
 
 class TaxiiJSONParser(parsers.JSONParser):
@@ -75,7 +78,21 @@ def get_status(id):
         return ErrorResp(404, f"status object with status-id `{id}` does not exist")
 
 
-class IsAuthenticated(permissions.IsAuthenticated):
+def noop_filter(view, data):
+    return data
+
+
+def get_arango_session(view: views.APIView):
+    from .authentication import ArangoUser, ArangoSession
+    if arango_taxii_server_settings.ARANGO_AUTH_FUNCTION:
+        auth = arango_taxii_server_settings.ARANGO_AUTH_FUNCTION(view)
+    elif isinstance(view.request.user, ArangoUser):
+        auth = view.request.user.arango_auth
+    else:
+        raise exceptions.AuthenticationFailed("user unauthorized or unsupported authorization method")
+    return ArangoSession(auth)
+
+class APIRootAuthentication(permissions.IsAuthenticated):
     """
     Allows access only to authenticated users.
     """
@@ -83,18 +100,25 @@ class IsAuthenticated(permissions.IsAuthenticated):
     def has_permission(self, request, view):
         return super().has_permission(
             request, view
-        ) and self.has_permission_to_api_root(request, view)
+        ) and self.has_permission_to_api_root(request, view) and self.has_permission_to_collection(request, view)
 
     def has_permission_to_api_root(self, request: Request, view: views.APIView):
-        # db: arango_helper.ArangoSession = request.user.arango_session
+        # db: arango_helper.ArangoSession = get_arango_session(self)
         # if api_root := view.kwargs.get("api_root"):
         #     return db.is_authorized(api_root)
+        return True
+    
+    def has_permission_to_collection(self, request: Request, view: views.APIView):
         return True
 
 
 class ArangoView(views.APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = arango_taxii_server_settings.PERMISSION_CLASSES
     renderer_classes = [TaxiiJSONRenderer]
+    if arango_taxii_server_settings.AUTHENTICATION_CLASSES != None:
+        authentication_classes = arango_taxii_server_settings.AUTHENTICATION_CLASSES
+    schema = open_api_schemas.CustomAutoSchema()
+    is_arango_taxii_server_view = True
 
     def get_authenticators(self):
         return super().get_authenticators()
@@ -140,11 +164,12 @@ class ServerInfoView(generics.GenericAPIView, ArangoView):
         ),
     )
     def get(self, request: Request):
-        base_url = urljoin(conf.server_host_path, request._request.get_full_path(False))
-        db: arango_helper.ArangoSession = request.user.arango_session
+        base_url = request._request.build_absolute_uri()
+        db: arango_helper.ArangoSession = get_arango_session(self)
         api_roots = [
             urljoin(base_url, collection + "/") for collection in db.get_databases()
         ]
+        api_roots = arango_taxii_server_settings.FILTER_API_ROOTS(self, api_roots)
         serializer = ServerInfoSerializer(
             data={
                 "api_roots": api_roots,
@@ -177,7 +202,7 @@ class ApiRootView(ArangoView, viewsets.ViewSet):
         ),
     )
     def list(self, request: Request, api_root=None):
-        db: arango_helper.ArangoSession = request.user.arango_session
+        db: arango_helper.ArangoSession = get_arango_session(self)
         can_read, can_write = db.get_database(api_root)
         if not (can_read or can_write):
             return ErrorResp(403, "The client does not have access to this resource.")
@@ -209,7 +234,7 @@ class StatusView(ArangoView, viewsets.ViewSet):
         ),
     )
     def retrieve(self, request, status_id=None, api_root=None):
-        db: arango_helper.ArangoSession = request.user.arango_session
+        db: arango_helper.ArangoSession = get_arango_session(self)
         db.verify_auth(api_root)
         return get_status(status_id)
 
@@ -252,8 +277,8 @@ class CollectionView(ArangoView, viewsets.ViewSet):
         ),
     )
     def list(self, request: Request, api_root=""):
-        db: arango_helper.ArangoSession = request.user.arango_session
-        collections = db.get_collections(api_root)
+        db: arango_helper.ArangoSession = get_arango_session(self)
+        collections = arango_taxii_server_settings.FILTER_COLLECTIONS(self, db.get_collections(api_root))
         s = self.serializer_class(data={"collections": collections})
         s.is_valid()
         return Response(s.data)
@@ -278,7 +303,7 @@ class CollectionView(ArangoView, viewsets.ViewSet):
         ),
     )
     def retrieve(self, request: Request, api_root="", collection_id=""):
-        db: arango_helper.ArangoSession = request.user.arango_session
+        db: arango_helper.ArangoSession = get_arango_session(self)
         collection = db.get_collection(api_root, collection_id)
         s = serializers.SingleCollectionSerializer(data=collection)
         s.is_valid()
@@ -306,7 +331,7 @@ class CollectionView(ArangoView, viewsets.ViewSet):
     )
     @decorators.action(methods=["GET"], detail=True)
     def manifest(self, request, api_root="", collection_id=""):
-        db: arango_helper.ArangoSession = request.user.arango_session
+        db: arango_helper.ArangoSession = get_arango_session(self)
         manifest = db.get_objects_all(
             api_root, collection_id, request.query_params.dict(), "manifest"
         )
@@ -371,11 +396,11 @@ class ObjectView(ArangoView, viewsets.ViewSet):
         ),
     )
     def create(self, request: Request, api_root="", collection_id="", more_queries={}):
-        db: arango_helper.ArangoSession = request.user.arango_session
+        db: arango_helper.ArangoSession = get_arango_session(self)
         if (
-            conf.server_max_content_length
+            arango_taxii_server_settings.MAX_CONTENT_LENGTH
             and int(request.META.get("CONTENT_LENGTH") or 0)
-            > conf.server_max_content_length
+            > arango_taxii_server_settings.MAX_CONTENT_LENGTH
         ):
             return ErrorResp(
                 413,
@@ -444,7 +469,7 @@ class ObjectView(ArangoView, viewsets.ViewSet):
         },
     )
     def list(self, request: Request, api_root="", collection_id="", more_queries={}):
-        db: arango_helper.ArangoSession = request.user.arango_session
+        db: arango_helper.ArangoSession = get_arango_session(self)
         objects = db.get_objects_all(
             api_root,
             collection_id,
@@ -501,7 +526,7 @@ class ObjectView(ArangoView, viewsets.ViewSet):
         ),
     )
     def destroy(self, request: Request, api_root="", collection_id="", object_id=""):
-        db: arango_helper.ArangoSession = request.user.arango_session
+        db: arango_helper.ArangoSession = get_arango_session(self)
         db.remove_object(
             api_root,
             collection_id,
@@ -534,7 +559,7 @@ class ObjectView(ArangoView, viewsets.ViewSet):
     )
     @decorators.action(methods=["GET"], detail=True)
     def versions(self, request: Request, api_root="", collection_id="", object_id=""):
-        db: arango_helper.ArangoSession = request.user.arango_session
+        db: arango_helper.ArangoSession = get_arango_session(self)
         objects = db.get_objects_all(
             api_root,
             collection_id,
@@ -548,3 +573,49 @@ class ObjectView(ArangoView, viewsets.ViewSet):
         return self.pagination_class.get_paginated_response(
             [x["version"] for x in objects.result], objects
         )
+
+from drf_spectacular.generators import SchemaGenerator
+
+class AtsSchemaGenerator(SchemaGenerator):
+    def _get_paths_and_endpoints(self):
+        endpoints = []
+        for endpoint in  super()._get_paths_and_endpoints():
+            _, _, _, view = endpoint
+            if not getattr(view, 'is_arango_taxii_server_view', None):
+                continue
+            view.schema_exclude = False
+            endpoints.append(endpoint)
+        return endpoints
+
+class SchemaView(SpectacularAPIView):
+    custom_settings = {
+        "VERSION": arango_taxii_server_settings.VERSION,
+        "DESCRIPTION": arango_taxii_server_settings.SERVER_DESCRIPTION,
+        "TITLE": arango_taxii_server_settings.SERVER_TITLE,
+        'CONTACT': {
+            'email': arango_taxii_server_settings.CONTACT_EMAIL,
+            'url': arango_taxii_server_settings.CONTACT_URL,
+        },
+        "TAGS": [
+            {
+                "name": "Taxii API - Server Information",
+                "description": textwrap.dedent(
+                    """
+                Information about this TAXII Server, the available API Roots, and to retrieve the status of requests.
+                """
+                ),
+            },
+            {
+                "name": "Taxii API - Collections",
+                "description": textwrap.dedent(
+                    """
+                Collections are hosted in the context of an API Root. Each API Root MAY have zero or more Collections. As with other TAXII Endpoints, the ability of TAXII Clients to read from and write to Collections can be restricted depending on their permissions level.
+                """
+                ),
+            },
+        ],
+        **arango_taxii_server_settings.SPECTACULAR_KWARGS,
+    }
+    generator_class = AtsSchemaGenerator
+    if arango_taxii_server_settings.AUTHENTICATION_CLASSES != None:
+        authentication_classes = arango_taxii_server_settings.AUTHENTICATION_CLASSES

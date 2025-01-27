@@ -5,12 +5,12 @@ services:
         command: >
                 bash -c "python manage.py makemigrations &&
                             python manage.py migrate && 
-                            gunicorn arango_taxii_server.wsgi:application --bind 0.0.0.0:8000 --reload
+                            gunicorn arango_taxii_server.wsgi:application --bind 0.0.0.0:8009 --reload
                         "
         volumes:
             - .:/usr/src/app/
         ports:
-            - 8000:8000
+            - 8009:8009
         environment:
             - DEBUG=
             - DJANGO_ALLOWED_HOSTS=*

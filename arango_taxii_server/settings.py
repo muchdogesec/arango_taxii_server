@@ -149,25 +149,27 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 REST_FRAMEWORK = {
     # YOUR SETTINGS
-    'DEFAULT_SCHEMA_CLASS': 'arango_taxii_server.app.open_api_schemas.CustomAutoSchema',
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
     'DEFAULT_AUTHENTICATION_CLASSES': [
         "arango_taxii_server.app.authentication.ArangoServerAuthentication",
     ]
 }
 
 from . import conf
-SPECTACULAR_SETTINGS = {
-    'TITLE': "Arango TAXII Server API",
-    'DESCRIPTION': dedent("""
-        Arango TAXII Server is a production ready implementation of a TAXII 2.1 Server designed to work with ArangoDB.
-    """),
-    'VERSION': '1.0.0',
-    'CONTACT': {
-        'email': 'noreply@dogesec.com',
-        'url': 'https://github.com/muchdogesec/arango_taxii_server',
-    }
-}
 
-DATA_UPLOAD_MAX_MEMORY_SIZE = conf.server_max_content_length
-DEFAULT_PAGINATION_LIMIT = int(os.environ['DEFAULT_PAGE_SIZE'])
-MAX_PAGINATION_LIMIT = int(os.environ['MAX_PAGE_SIZE'])
+
+
+
+DATA_UPLOAD_MAX_MEMORY_SIZE = int(os.getenv('SERVER_MAX_CONTENT_LENGTH', 3*1024*1024))
+
+ARANGO_TAXII_SETTINGS = {
+    'MAX_CONTENT_LENGTH': DATA_UPLOAD_MAX_MEMORY_SIZE,
+    'SERVER_TITLE': os.getenv('SERVER_TITLE', "Arango Taxii Server"),
+    'SERVER_DESCRIPTION': os.getenv('SERVER_DESCRIPTION', "Arango Taxii Server"),
+    'CONTACT_URL': os.getenv('SERVER_SUPPORT', 'https://github.com/muchdogesec/arango_taxii_server'),
+    'CONTACT_EMAIL': os.getenv('SERVER_EMAIL', 'noreply@dogesec.com'),
+    'DEFAULT_PAGINATION_LIMIT': int(os.environ['DEFAULT_PAGE_SIZE']),
+    'MAX_PAGINATION_LIMIT': int(os.environ['MAX_PAGE_SIZE']),
+    'ARANGODB_HOST_URL': os.getenv('ARANGODB_HOST_URL'),
+    # 'FILTER_COLLECTIONS': 'arango_taxii_server.app.views.filter_collections'
+}

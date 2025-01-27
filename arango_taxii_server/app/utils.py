@@ -1,6 +1,6 @@
 from rest_framework import pagination, response
 from arango_taxii_server import conf
-from django.conf import settings
+from .settings import arango_taxii_server_settings as settings
 
 from .arango_helper import ArangoResponse
 
