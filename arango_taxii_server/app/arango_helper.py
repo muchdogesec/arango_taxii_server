@@ -1,4 +1,5 @@
 import json
+import logging
 import os
 import random
 import re
@@ -56,10 +57,11 @@ class ArangoFullPermissionParser:
 class ArangoSession:
     HOST_URL = arango_taxii_server_settings.ARANGODB_HOST_URL
 
-    def __init__(self, arango_auth) -> None:
-        self.user, self.password = arango_auth
+    def __init__(self, username, password, visible_to_ref=None) -> None:
         self.session = requests.Session()
-        self.session.auth = arango_auth
+        self.session.auth = username, password
+        self.user, self.password = (self.session.auth)
+        self.visible_to_ref = visible_to_ref
 
     def make_request(self, method, url, **kwargs):
         try:
@@ -71,6 +73,7 @@ class ArangoSession:
         except ArangoError:
             raise
         except Exception as e:
+            logging.exception(e)
             raise ArangoError(400, "arangodb could not process request")
 
     def is_authorized(self, db_name=None):
@@ -212,13 +215,13 @@ class ArangoSession:
         LET vertices = (
             FOR doc in @@vertex_collection
                 FILTER doc.id == @object_id
-                FILTER CONTAINS(@spec_versions, doc.spec_version) OR LENGTH(@spec_versions) == 0
+                FILTER doc.spec_version IN @spec_versions OR LENGTH(@spec_versions) == 0
                 RETURN {type: "vertex", _key: doc._key, modified: doc.modified}
         )
         LET edges = (
             FOR doc in @@edge_collection
                 FILTER doc.id == @object_id
-                FILTER CONTAINS(@spec_versions, doc.spec_version) OR LENGTH(@spec_versions) == 0
+                FILTER doc.spec_version IN @spec_versions OR LENGTH(@spec_versions) == 0
                 RETURN {type: "edge", _key: doc._key, modified: doc.modified}
         )
 
@@ -300,6 +303,7 @@ class ArangoSession:
             )
             binding = {"@vertex_collection": vertex, "@edge_collection": edge}
 
+
         collection_query = """
         FOR doc IN @@collection
         FILTER doc._record_modified > @added_after
@@ -326,17 +330,24 @@ class ArangoSession:
 
         binding['added_after'] = query_params.get('added_after', '')
         binding['match_version'] = list(set(query_params.get("match[version]", "last").split(",")))
+
         more_filters = []
+
+        if self.visible_to_ref:
+            binding['visible_to_ref'] = self.visible_to_ref
+            binding['marking_visible_to_all'] = ["marking-definition--94868c89-83c2-464b-929b-a1a8aa3c8487", "marking-definition--bab4a63c-aed9-4cf5-a766-dfca5abac2bb"]
+            more_filters.append("(doc.created_by_ref IN [NULL, @visible_to_ref] OR (@marking_visible_to_all ANY IN doc.object_marking_refs))")
+
         if stix_type := query_params.get("match[type]", ""):
-            more_filters.append("CONTAINS(@match_type, doc.type)")
+            more_filters.append("doc.type IN @match_type")
             binding["match_type"] = stix_type.split(",")
 
         if match_id := query_params.get("match[id]"):
-            more_filters.append('CONTAINS(@match_id, doc.id)')
+            more_filters.append('doc.id IN @match_id')
             binding["match_id"] = match_id.split(",")
 
         if match_spec_version := query_params.get("match[spec_version]"):
-            more_filters.append("(CONTAINS(@spec_versions, doc.spec_version) OR LENGTH(@spec_versions) == 0)")
+            more_filters.append("(doc.spec_version IN @spec_versions OR LENGTH(@spec_versions) == 0)")
             binding["spec_versions"] = match_spec_version.split(",")
 
         if more_filters:
