@@ -90,7 +90,7 @@ def get_arango_session(view: views.APIView):
         auth = view.request.user.arango_auth
     else:
         raise exceptions.AuthenticationFailed("user unauthorized or unsupported authorization method")
-    return ArangoSession(auth)
+    return ArangoSession(*auth)
 
 class APIRootAuthentication(permissions.IsAuthenticated):
     """
