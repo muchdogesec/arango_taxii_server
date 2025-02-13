@@ -11,7 +11,7 @@ class ArangoUser(AnonymousUser):
     def __init__(self, username, passwd):
         self.username = username
         self.arango_auth = (username, passwd)
-        self.arango_session = ArangoSession(self.arango_auth)
+        self.arango_session = ArangoSession(*self.arango_auth)
 
     @property
     def is_authenticated(self):
