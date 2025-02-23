@@ -230,7 +230,7 @@ class CustomAutoSchema(AutoSchema):
             "api_root",
             type=str,
             location=OpenApiParameter.PATH,
-            description="The API Root name. Do not include the full URL. e.g. use `my_api_root` NOT `http://127.0.0.1:8000/api/taxii2/my_api_root/`",
+            description="The API Root name. Do not include the full URL. e.g. use `my_api_root` NOT `http://127.0.0.1:8009/api/taxii2/my_api_root/`",
         ),
         "object_id": OpenApiParameter(
             "object_id",
