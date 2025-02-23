@@ -24,5 +24,5 @@ DJANGO_DEBUG=False
 ## run the test
 
 ```shell
-st run --checks all http://127.0.0.1:8000/api/schema/ --generation-allow-x00 false --contrib-openapi-formats-uuid  --show-trace --exclude-tag schema
+st run --checks all http://127.0.0.1:8009/api/schema/ --generation-allow-x00 false --contrib-openapi-formats-uuid  --show-trace --exclude-tag schema
 ```
