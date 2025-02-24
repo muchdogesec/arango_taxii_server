@@ -171,5 +171,6 @@ ARANGO_TAXII_SETTINGS = {
     'DEFAULT_PAGINATION_LIMIT': int(os.environ['DEFAULT_PAGE_SIZE']),
     'MAX_PAGINATION_LIMIT': int(os.environ['MAX_PAGE_SIZE']),
     'ARANGODB_HOST_URL': os.getenv('ARANGODB_HOST_URL'),
+    'AUTHENTICATION_CLASSES': ["arango_taxii_server.app.authentication.ArangoServerAuthentication",],
     # 'FILTER_COLLECTIONS': 'arango_taxii_server.app.views.filter_collections'
 }
