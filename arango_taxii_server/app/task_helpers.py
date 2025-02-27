@@ -19,10 +19,9 @@ if arango_taxii_server_settings.SUPPORT_WRITE_OPERATIONS:
 def upload_all(task_id, username, password, objects):
     task = models.UploadTask.objects.get(id=task_id)
     bundle_id = f"bundle--{task_id}"
-    
-    db = Stix2Arango(task.db, task.collection, file=None, stix2arango_note=f"arango_taxii_status_id={task_id}", bundle_id=bundle_id, username=username, password=password, host_url=arango_taxii_server_settings.ARANGODB_HOST_URL)
 
     try:
+        db = Stix2Arango(task.db, task.collection, file=None, create_db=False, stix2arango_note=f"arango_taxii_status_id={task_id}", bundle_id=bundle_id, username=username, password=password, host_url=arango_taxii_server_settings.ARANGODB_HOST_URL)
         db.run(dict(type="bundle", id=bundle_id, objects=objects))
         task.uploads.update(status=models.Status.COMPLETE)
     except Exception as e:
