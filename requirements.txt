@@ -44,4 +44,4 @@ vine==5.1.0; python_version >= '3.6'
 wcwidth==0.2.13
 zipp==3.19.1; python_version >= '3.8'
 pytest==8.2.2; python_version >= '3.8'
-stix2arango @ https://github.com/muchdogesec/stix2arango/releases/download/dont-use-sysdb-2025-02-27-12-20-54/stix2arango-0.0.4rc0-py3-none-any.whl
+stix2arango @ https://github.com/muchdogesec/stix2arango/releases/download/main-2025-02-27-14-01-46/stix2arango-0.0.4rc0-py3-none-any.whl
