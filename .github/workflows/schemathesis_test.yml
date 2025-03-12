@@ -24,10 +24,9 @@ jobs:
           
       - name: Set .env for docker-compose
         run: |
-
             echo > .env
             echo 'DJANGO_ALLOWED_HOSTS=*' >> .env
-            echo DJANGO_SECRET=DJANGO_SECRET >> .env
+
             cat tests/st/.env.schemathesis >> .env
             cp tests/st/docker-compose.yml arango-compose.yml
 
