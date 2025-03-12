@@ -16,7 +16,6 @@ def after_call(context, case: Case, response: GenericResponse):
         response._content = json.dumps(parsed).encode()
 
 
-
 @schemathesis.hook
 def after_load_schema(
     context: schemathesis.hooks.HookContext,

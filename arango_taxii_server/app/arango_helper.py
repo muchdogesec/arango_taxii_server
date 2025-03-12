@@ -204,7 +204,7 @@ class ArangoSession:
         return resp
 
     def remove_object(
-        self, db_name, collection, object_id, match_version=None, match_spec_version=""
+        self, db_name, collection, object_id, match_version=None, match_spec_version=[]
     ):
         vertex, edge = (
             f"{collection}_vertex_collection",
@@ -237,7 +237,7 @@ class ArangoSession:
                     "object_id": object_id,
                     "@vertex_collection": vertex,
                     "@edge_collection": edge,
-                    "spec_versions": match_spec_version.split(","),
+                    "spec_versions": match_spec_version,
                 },
             ),
         )

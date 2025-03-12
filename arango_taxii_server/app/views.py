@@ -531,8 +531,8 @@ class ObjectView(ArangoView, viewsets.ViewSet):
             api_root,
             collection_id,
             object_id,
-            match_version=request.query_params.get("match[version]", ""),
-            match_spec_version=request.query_params.get("match[spec_version]", ""),
+            match_version=request.query_params.get("match[version]"),
+            match_spec_version=[v for v in request.query_params.get("match[spec_version]", "").split(',') if v],
         )
         return Response()
 
