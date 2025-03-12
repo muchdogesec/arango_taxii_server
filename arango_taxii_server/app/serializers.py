@@ -32,7 +32,7 @@ class SerializerBase(serializers.Serializer):
 class ServerInfoSerializer(serializers.Serializer):
     title = serializers.CharField(default=arango_taxii_server_settings.SERVER_TITLE)
     description = serializers.CharField(default=arango_taxii_server_settings.SERVER_DESCRIPTION)
-    contact = serializers.EmailField(default=arango_taxii_server_settings.CONTACT_URL)
+    contact = serializers.CharField(default=arango_taxii_server_settings.CONTACT_URL)
     api_roots = serializers.ListField(child=serializers.CharField())
 
 
