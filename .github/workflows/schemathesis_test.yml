@@ -80,6 +80,7 @@ jobs:
       - name: test all endpoints 1
         id: test-endpoints
         run: |
+          export ARANGODB_HOST_URL=http://localhost:8529/
           export SERVICE_BASE_URL="${{ steps.get_ip.outputs.SERVICE_BASE_URL }}"
 
           pytest tests/
