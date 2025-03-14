@@ -20,8 +20,6 @@ Arango TAXII Server is a production ready implementation of a TAXII 2.1 Server d
 # clone the latest code
 git clone https://github.com/muchdogesec/arango_taxii_server
 cd arango_taxii_server
-# fetch submodules
-git submodule update --init --recursive
 ```
 
 ### Configuration options

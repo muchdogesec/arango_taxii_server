@@ -6,7 +6,7 @@
 python3 -m venv arango_taxii_server-venv
 source arango_taxii_server-venv/bin/activate
 # install requirements
-pip3 install -r requirements_dev.txt
+pip3 install -r requirements.txt
 ```
 
 ### set environment variables
