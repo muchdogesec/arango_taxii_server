@@ -1,6 +1,18 @@
 services:
-    django:
+    env_django:
+        extra_hosts:
+            - "host.docker.internal:host-gateway"
+        image: arango_taxii_server
         build: .
+        pull_policy: never
+        volumes:
+            - .:/usr/src/app
+        env_file:
+            - ./.env
+
+    django:
+        extends: env_django
+        image: arango_taxii_server
         container_name: django
         command: >
                 bash -c "python manage.py makemigrations &&
@@ -23,20 +35,17 @@ services:
             redis:
                 condition: service_started
     celery:
-        build: .
+        extends: env_django
+        image: arango_taxii_server
         command: >
                 bash -c "
                   celery -A arango_taxii_server worker -l INFO
                   "
-        volumes:
-            - .:/usr/src/app
         environment:
             - DEBUG=1
             - DJANGO_ALLOWED_HOSTS=localhost 127.0.0.1 [::1]
             - CELERY_BROKER_URL=redis://redis:6379/0
             - result_backend=redis://redis:6379/1
-        env_file:
-            - ./.env
         depends_on:
             - django
             - redis
