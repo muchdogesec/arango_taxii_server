@@ -1,5 +1,7 @@
 # Arango TAXII Server
 
+[![codecov](https://codecov.io/gh/muchdogesec/arango_taxii_server/graph/badge.svg?token=FYX14J4PSE)](https://codecov.io/gh/muchdogesec/arango_taxii_server)
+
 ## Overview
 
 ![](docs/arango_taxii_server.png)
