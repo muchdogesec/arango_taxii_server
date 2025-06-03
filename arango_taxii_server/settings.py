@@ -160,6 +160,9 @@ from . import conf
 
 
 
+ARANGODB_HOST_URL = os.environ['ARANGODB_HOST_URL']
+ARANGODB_USERNAME = os.environ['ARANGODB_USERNAME']
+ARANGODB_PASSWORD = os.environ['ARANGODB_PASSWORD']
 DATA_UPLOAD_MAX_MEMORY_SIZE = int(os.getenv('SERVER_MAX_CONTENT_LENGTH', 3*1024*1024))
 
 ARANGO_TAXII_SETTINGS = {
@@ -172,5 +175,5 @@ ARANGO_TAXII_SETTINGS = {
     'MAX_PAGINATION_LIMIT': int(os.environ['MAX_PAGE_SIZE']),
     'ARANGODB_HOST_URL': os.getenv('ARANGODB_HOST_URL'),
     'AUTHENTICATION_CLASSES': ["arango_taxii_server.app.authentication.ArangoServerAuthentication",],
-    # 'FILTER_COLLECTIONS': 'arango_taxii_server.app.views.filter_collections'
+    'APIROOT_BASE_URL': os.getenv('APIROOT_BASE_URL'),
 }

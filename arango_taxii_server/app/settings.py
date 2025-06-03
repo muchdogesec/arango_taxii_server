@@ -4,6 +4,7 @@ from django.conf import settings
 from rest_framework.settings import APISettings, perform_import, api_settings
 
 ARANGO_TAXII_DEFAULTS: dict[str, any] = {
+    'APIROOT_BASE_URL': None,
     'SERVER_TITLE': "Arango Taxii Server",
     'SERVER_DESCRIPTION': "Arango TAXII Server is a production ready implementation of a TAXII 2.1 Server designed to work with ArangoDB.",
     'CONTACT_URL': 'https://github.com/muchdogesec/arango_taxii_server',

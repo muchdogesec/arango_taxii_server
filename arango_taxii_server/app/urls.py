@@ -5,6 +5,8 @@ from drf_spectacular.views import SpectacularAPIView, SpectacularRedocView, Spec
 from arango_taxii_server import conf
 from arango_taxii_server.app import views
 
+from arango_taxii_server.app import schema_views
+
 from django.http import JsonResponse
 def handler404(*args, **kwargs):
     return JsonResponse(dict(http_status=str(404), title='non-existent page'), status=404, content_type=conf.taxii_type)
@@ -26,8 +28,8 @@ urlpatterns = [
     path('taxii2/<slug:api_root>/', include(router.urls), name="taxii-server-api-root"),
     # <>
     # SWAGGER
-    path('schema/', views.SchemaView.as_view(), name='taxii-server-schema'),
+    path('schema/', schema_views.SchemaView.as_view(), name='taxii-server-schema'),
     # Optional UI:
-    path('schema/swagger-ui/', SpectacularSwaggerView.as_view(url_name='taxii-server-schema'), name='swagger-ui'),
+    path('schema/swagger-ui/', schema_views.SwaggerUIView.as_view(url_name='taxii-server-schema'), name='swagger-ui'),
     path('schema/redoc/', SpectacularRedocView.as_view(url_name='taxii-server-schema'), name='redoc'),
 ]
