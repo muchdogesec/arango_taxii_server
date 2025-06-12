@@ -142,7 +142,7 @@ class ArangoView(views.APIView):
 
 
 class ServerInfoView(generics.GenericAPIView, ArangoView):
-    @extend_schema_serializer(many=False)
+    pagination_class = None
     @extend_schema(
         responses={
             200: ServerInfoSerializer,
