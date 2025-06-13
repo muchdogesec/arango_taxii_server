@@ -7,7 +7,7 @@ ARANGO_TAXII_DEFAULTS: dict[str, any] = {
     'APIROOT_BASE_URL': None,
     'SERVER_TITLE': "Arango Taxii Server",
     'SERVER_DESCRIPTION': "Arango TAXII Server is a production ready implementation of a TAXII 2.1 Server designed to work with ArangoDB.",
-    'CONTACT_URL': 'https://github.com/muchdogesec/arango_taxii_server',
+    'CONTACT_URL': '',
     'CONTACT_EMAIL': '',
     'VERSION': None,
     'MAX_CONTENT_LENGTH': 10*1024*1024, #10 MiB

@@ -165,11 +165,12 @@ ARANGODB_USERNAME = os.environ['ARANGODB_USERNAME']
 ARANGODB_PASSWORD = os.environ['ARANGODB_PASSWORD']
 DATA_UPLOAD_MAX_MEMORY_SIZE = int(os.getenv('SERVER_MAX_CONTENT_LENGTH', 3*1024*1024))
 
+
 ARANGO_TAXII_SETTINGS = {
     'MAX_CONTENT_LENGTH': DATA_UPLOAD_MAX_MEMORY_SIZE,
     'SERVER_TITLE': os.getenv('SERVER_TITLE', "Arango Taxii Server"),
-    'SERVER_DESCRIPTION': os.getenv('SERVER_DESCRIPTION', "Arango Taxii Server"),
-    'CONTACT_URL': os.getenv('SERVER_SUPPORT', 'https://github.com/muchdogesec/arango_taxii_server'),
+    'SERVER_DESCRIPTION': os.getenv('SERVER_DESCRIPTION', "Arango Taxii Server: A TAXII 2.1 server with ArangoDB Backend"),
+    'CONTACT_URL': os.getenv('SERVER_SUPPORT', 'https://github.com/muchdogesec/arango_taxii_server/issues/'),
     'CONTACT_EMAIL': os.getenv('SERVER_EMAIL', 'noreply@dogesec.com'),
     'DEFAULT_PAGINATION_LIMIT': int(os.environ['DEFAULT_PAGE_SIZE']),
     'MAX_PAGINATION_LIMIT': int(os.environ['MAX_PAGE_SIZE']),
