@@ -13,7 +13,10 @@ if arango_taxii_server_settings.SUPPORT_WRITE_OPERATIONS:
     try:
         from stix2arango.stix2arango import Stix2Arango
     except Exception as e:
-        raise Exception("stix2arango is needed, consider installing stix2arango or arango_taxii_server[full]") from e
+        raise Exception(
+            "stix2arango is needed, consider installing stix2arango or arango_taxii_server[full]"
+        ) from e
+
 
 @shared_task
 def upload_all(task_id, username, password, objects):
@@ -21,7 +24,18 @@ def upload_all(task_id, username, password, objects):
     bundle_id = f"bundle--{task_id}"
 
     try:
-        db = Stix2Arango(task.db, task.collection, file=None, create_db=False, stix2arango_note=f"arango_taxii_status_id={task_id}", bundle_id=bundle_id, username=username, password=password, host_url=arango_taxii_server_settings.ARANGODB_HOST_URL)
+        db = Stix2Arango(
+            task.db,
+            task.collection,
+            file=None,
+            create_db=False,
+            stix2arango_note=f"arango_taxii_status_id={task_id}",
+            bundle_id=bundle_id,
+            username=username,
+            password=password,
+            host_url=arango_taxii_server_settings.ARANGODB_HOST_URL,
+            ignore_embedded_relationships=True,
+        )
         db.run(dict(type="bundle", id=bundle_id, objects=objects))
         task.uploads.update(status=models.Status.COMPLETE)
     except Exception as e:

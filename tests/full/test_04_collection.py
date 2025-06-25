@@ -5,8 +5,7 @@ import time
 from types import SimpleNamespace
 from urllib.parse import urljoin
 import pytest
-from .utils import get_session, base_url
-import requests
+from .utils import get_session
 from tests.create_accounts_and_databases import COLL_1_1, COLL_1_2, COLL_2_1
 
 null, true, false = None, True, False
@@ -126,10 +125,9 @@ def test_collection(
     expected_status,
     expected_body,
 ):
-    s = get_session()
-    s.auth = (username, username)
+    s = get_session(auth=(username, username))
     resp = s.get(
-        urljoin(base_url, f"api/taxii2/{api_root_name}/collections/{collection_name}/"),
+        f"/api/taxii2/{api_root_name}/collections/{collection_name}/",
         headers=extra_headers,
     )
     assert resp.status_code == expected_status

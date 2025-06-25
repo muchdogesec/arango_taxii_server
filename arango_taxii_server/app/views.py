@@ -22,6 +22,8 @@ from rest_framework.request import Request
 from drf_spectacular.views import SpectacularAPIView
 from drf_spectacular.settings import spectacular_settings
 
+from .authentication import ArangoUser, ArangoSession
+
 # from rest_framework.response import Response
 from rest_framework import renderers, parsers
 
@@ -83,7 +85,6 @@ def noop_filter(view, data):
 
 
 def get_arango_session(view: views.APIView):
-    from .authentication import ArangoUser, ArangoSession
     if arango_taxii_server_settings.ARANGO_AUTH_FUNCTION:
         auth = arango_taxii_server_settings.ARANGO_AUTH_FUNCTION(view)
     elif isinstance(view.request.user, ArangoUser):
@@ -103,7 +104,7 @@ class APIRootAuthentication(permissions.IsAuthenticated):
         ) and self.has_permission_to_api_root(request, view) and self.has_permission_to_collection(request, view)
 
     def has_permission_to_api_root(self, request: Request, view: views.APIView):
-        # db: arango_helper.ArangoSession = get_arango_session(self)
+        # db: arango_helper.ArangoSession = get_arango_session(view)
         # if api_root := view.kwargs.get("api_root"):
         #     return db.is_authorized(api_root)
         return True

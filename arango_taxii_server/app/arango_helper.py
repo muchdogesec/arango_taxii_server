@@ -7,7 +7,6 @@ import subprocess
 from urllib.parse import urljoin, urlparse
 from datetime import datetime
 from .settings import arango_taxii_server_settings
-
 import requests
 
 from .. import conf
@@ -303,35 +302,40 @@ class ArangoSession:
             )
             binding = {"@vertex_collection": vertex, "@edge_collection": edge}
 
+        
+
 
         collection_query = """
         FOR doc IN @@collection
         FILTER doc._record_modified > @added_after
         // [MORE_FILTERS]
         SORT doc._record_modified
-        LET versions = MERGE(
-        FOR inner IN @@collection
-        FILTER inner.id == doc.id
-        COLLECT version = inner.modified OR inner.created AGGREGATE createdAt = MAX(inner._record_modified)
-        RETURN {[version]: createdAt}
-        )
-        LET current_version = doc.modified OR doc.created
-        LET all_versions = MERGE(versions, {"first": versions[MIN(KEYS(versions))], "last": versions[MAX(KEYS(versions))]})
-        LET match_version = "all" IN @match_version ? KEYS(versions) : @match_version OR ["last"]
-
-        FILTER LENGTH(
-        FOR v in match_version
-        FILTER doc._record_modified == all_versions[v]
-        RETURN 1
-        )
         LIMIT @limit
         RETURN doc
         """
 
         binding['added_after'] = query_params.get('added_after', '')
-        binding['match_version'] = list(set(query_params.get("match[version]", "last").split(",")))
+        version_filters = []
+        match_versions = []
+        match_version = list(set(query_params.get("match[version]", "last").split(",")))
+        for v in match_version:
+            match v:
+                case 'last':
+                    version_filters.append('doc._taxii.last == TRUE')
+                case 'first':
+                    version_filters.append('doc._taxii.first == TRUE')
+                case 'all':
+                    version_filters = ['doc._taxii.visible == TRUE']
+                    break
+                case _:
+                    version_filters.append('(doc._taxii.visible == TRUE AND doc.modified IN @match_versions)')
+                    match_versions.append(v)
+        if match_versions:
+            binding['match_versions'] = match_versions
 
         more_filters = []
+
+        more_filters.append('({})'.format(' OR '.join(version_filters)))
 
         if self.visible_to_ref:
             binding['visible_to_ref'] = self.visible_to_ref
