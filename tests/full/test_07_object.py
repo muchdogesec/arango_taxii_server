@@ -5,8 +5,7 @@ import time
 from types import SimpleNamespace
 from urllib.parse import urljoin
 import pytest
-from .utils import get_session, base_url, validate_envelope
-import requests
+from .utils import get_session, validate_envelope
 from tests.create_accounts_and_databases import COLL_1_1, COLL_1_2, COLL_2_1
 
 @pytest.mark.parametrize(
@@ -28,11 +27,11 @@ from tests.create_accounts_and_databases import COLL_1_1, COLL_1_2, COLL_2_1
 )
 def test_object_retrieve(headers, user, api_root, collection_id, object_id, filter_kwargs, expected_status, expected_versions):
     s = get_session()
-    s.auth = (user, user)
+    s = get_session(auth=(user, user))
     resp = s.get(
-        urljoin(base_url, f"api/taxii2/{api_root}/collections/{collection_id}/objects/{object_id}/"),
+        f"/api/taxii2/{api_root}/collections/{collection_id}/objects/{object_id}/",
         headers=headers,
-        params=filter_kwargs
+        query_params=filter_kwargs
     )
     assert resp.status_code == expected_status
     assert (
@@ -61,9 +60,9 @@ def test_object_retrieve(headers, user, api_root, collection_id, object_id, filt
 )
 def test_object_versions(user, api_root, collection_id, object_id, expected_status, expected_versions):
     s = get_session()
-    s.auth = (user, user)
+    s = get_session(auth=(user, user))
     resp = s.get(
-        urljoin(base_url, f"api/taxii2/{api_root}/collections/{collection_id}/objects/{object_id}/versions/"),
+        f"/api/taxii2/{api_root}/collections/{collection_id}/objects/{object_id}/versions/",
     )
     assert resp.status_code == expected_status
     assert (
@@ -93,14 +92,14 @@ def test_object_versions(user, api_root, collection_id, object_id, expected_stat
     ]
 )
 def test_object_delete(user, api_root, collection_id, object_id, filter_kwargs, expected_status, versions_after, subtests):
-    s = get_session()
-    s.auth = (user, user)
+    s = get_session(auth=(user, user))
+    url = f"/api/taxii2/{api_root}/collections/{collection_id}/objects/{object_id}/"
     resp = s.delete(
-        urljoin(base_url, f"api/taxii2/{api_root}/collections/{collection_id}/objects/{object_id}/"),
-        params=filter_kwargs
+        url,
+        query_params=filter_kwargs
     )
     assert resp.status_code == expected_status
     if expected_status != 200:
         return
-    with subtests.test('check_versions_after_delete', delete_filters=filter_kwargs, object_url=resp.url):
+    with subtests.test('check_versions_after_delete', delete_filters=filter_kwargs, object_url=url):
         test_object_retrieve(None, user, api_root, collection_id, object_id, {'match[version]': 'all'}, 200, versions_after)

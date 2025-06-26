@@ -2,8 +2,8 @@ import time
 from types import SimpleNamespace
 from urllib.parse import urljoin
 import pytest
-from .utils import get_session, base_url
-import requests
+from .utils import get_session
+from arango_taxii_server.app.settings import arango_taxii_server_settings
 
 @pytest.mark.parametrize(
     ["username", "extra_headers", "expected_status", "expected_roots"],
@@ -16,14 +16,13 @@ import requests
     ]
 )
 def test_discovery(username, extra_headers, expected_status, expected_roots):
-    s = get_session()
-    s.auth = (username, username)
-    resp = s.get(urljoin(base_url, 'api/taxii2/'), headers=extra_headers)
+    s = get_session(auth=(username, username))
+    resp = s.get(f"/api/taxii2/", headers=extra_headers)
     assert resp.status_code == expected_status
     assert resp.headers['Content-Type'] == "application/taxii+json;version=2.1", "response `header['content-type']` must always be `application/taxii+json;version=2.1`"
     if expected_status != 200:
         return
     data = resp.json()
     assert {root.split('/')[-2] for root in data['api_roots']} == set(expected_roots)
-    assert data['title'] == "Arango TAXII Server"
-    assert data['description'] == "Arango TAXII Server: https://github.com/muchdogesec/arango_taxii_server/"
+    assert data['title'] == "Arango Taxii Server Title"
+    assert data['description'] == "Arango TAXII Server Description"

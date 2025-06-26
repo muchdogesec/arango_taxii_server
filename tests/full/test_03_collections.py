@@ -7,9 +7,8 @@ from urllib.parse import urljoin
 import pytest
 
 from tests.create_accounts_and_databases import COLL_1_1, COLL_1_2, COLL_2_1
-from tests.test_04_collection import test_collection
-from .utils import get_session, base_url
-import requests
+from tests.full.test_04_collection import test_collection
+from .utils import get_session
 
 @pytest.mark.parametrize(
     ["username", "api_root_name", 'collection_names', 'extra_headers', "expected_status", "can_read", 'can_write'],
@@ -91,10 +90,9 @@ import requests
     ],
 )
 def test_collection_list(subtests, username, api_root_name, collection_names, extra_headers, expected_status, can_read, can_write):
-    s = get_session()
-    s.auth = (username, username)
+    s = get_session(auth=(username, username))
     resp = s.get(
-        urljoin(base_url, f"api/taxii2/{api_root_name}/collections/"), headers=extra_headers
+        f"/api/taxii2/{api_root_name}/collections/", headers=extra_headers
     )
     assert resp.status_code == expected_status
     assert (
