@@ -554,7 +554,7 @@ class ObjectView(ArangoView, viewsets.ViewSet):
         summary="Get a list of object versions from a collection",
         description=textwrap.dedent(
             """
-        This Endpoint retrieves a list of one or more versions of an object in a Collection. This list can be used to decide whether it's worth retrieving the actual objects, or if new versions have been added. If a STIX object is not versioned (and therefore does not have a `modified` timestamp), the server uses the stix2atango `_record_modified` timestamp.
+        This Endpoint retrieves a list of one or more versions of an object in a Collection. This list can be used to decide whether it's worth retrieving the actual objects, or if new versions have been added. If a STIX object is not versioned (and therefore does not have a `modified` timestamp), the server uses the stix2atango `_record_created` timestamp.
         """
         ),
     )

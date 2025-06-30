@@ -25,3 +25,4 @@ def upload_bundles():
         resp = s.get(f"/api/taxii2/{API_ROOT}/status/{status_id}/")
         assert resp.status_code == 200, resp.data
         assert resp.data['status'] == 'complete'
+        assert resp.data['failure_count'] == 0, resp.content
