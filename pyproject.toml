@@ -22,6 +22,7 @@ dependencies = [
     "python-arango>=8.1.3; python_version >= '3.8'",
     "celery>=5.4.0; python_version >= '3.8'",
     "django-cors-headers",
+    "stix2arango",
   ]
 [project.urls]
 Homepage = "https://github.com/muchdogesec/arango_taxii_server"
@@ -29,7 +30,6 @@ Issues = "https://github.com/muchdogesec/arango_taxii_server/issues"
 
 [project.optional-dependencies]
 full = [
-    "stix2arango",
     "redis>=5.1.0b5; python_version >= '3.8'",
     "psycopg2-binary>=2.9.10; python_version >= '3.7'",
 ]
