@@ -182,17 +182,17 @@ class ArangoSession:
         payload = self.build_query(collection_id, query_params, query_type)
         resp = self.make_request('POST', url, json=payload)
 
-        # delete _record_modified and add set first and last dates
+        # delete _record_created and add set first and last dates
         if resp.result:
             added_last = "0000"
             added_first = "9999"
             for r in resp.result:
-                date_added = r["_record_modified"]
+                date_added = r["_record_created"]
                 if date_added < added_first:
                     added_first = date_added
                 if date_added > added_last:
                     added_last = date_added
-                del r["_record_modified"]
+                del r["_record_created"]
             resp.dict.update(added_last=added_last, added_first=added_first)
 
         if resp.dict.get("hasMore"):
@@ -212,13 +212,13 @@ class ArangoSession:
 
         AQL = """
         LET vertices = (
-            FOR doc in @@vertex_collection
+            FOR doc in @@vertex_collection  OPTIONS {indexHint: "taxii_search", forceIndexHint: true}
                 FILTER doc.id == @object_id
                 FILTER doc.spec_version IN @spec_versions OR LENGTH(@spec_versions) == 0
                 RETURN {type: "vertex", _key: doc._key, modified: doc.modified}
         )
         LET edges = (
-            FOR doc in @@edge_collection
+            FOR doc in @@edge_collection  OPTIONS {indexHint: "taxii_search", forceIndexHint: true}
                 FILTER doc.id == @object_id
                 FILTER doc.spec_version IN @spec_versions OR LENGTH(@spec_versions) == 0
                 RETURN {type: "edge", _key: doc._key, modified: doc.modified}
@@ -293,9 +293,7 @@ class ArangoSession:
             if specific collection is used
             """
             binding = {"@collection": collection}
-            aql_documents_str = "(FOR doc IN @@collection RETURN doc)"
         else:
-            aql_documents_str = "APPEND((FOR doc IN @@edge_collection RETURN doc), (FOR doc IN @@vertex_collection RETURN doc))"
             vertex, edge = (
                 f"{collection}_vertex_collection",
                 f"{collection}_edge_collection",
@@ -306,10 +304,10 @@ class ArangoSession:
 
 
         collection_query = """
-        FOR doc IN @@collection
-        FILTER doc._record_modified > @added_after
+        FOR doc IN @@collection OPTIONS {indexHint: "taxii_search", forceIndexHint: true}
+        FILTER doc._record_created > @added_after
         // [MORE_FILTERS]
-        SORT doc._record_modified
+        SORT doc._record_created ASC
         LIMIT @limit
         RETURN doc
         """
@@ -328,10 +326,10 @@ class ArangoSession:
                     version_filters = ['doc._taxii.visible == TRUE']
                     break
                 case _:
-                    version_filters.append('(doc._taxii.visible == TRUE AND doc.modified IN @match_versions)')
                     match_versions.append(v)
         if match_versions:
             binding['match_versions'] = match_versions
+            version_filters.append('(doc._taxii.visible == TRUE AND doc.modified IN @match_versions)')
 
         more_filters = []
 
@@ -351,7 +349,7 @@ class ArangoSession:
             binding["match_id"] = match_id.split(",")
 
         if match_spec_version := query_params.get("match[spec_version]"):
-            more_filters.append("(doc.spec_version IN @spec_versions OR LENGTH(@spec_versions) == 0)")
+            more_filters.append("doc.spec_version IN @spec_versions")
             binding["spec_versions"] = match_spec_version.split(",")
 
         if more_filters:
@@ -373,7 +371,7 @@ class ArangoSession:
         )
 
         FOR doc in UNION(vertices, edges)
-        SORT doc._record_modified
+        SORT doc._record_created ASC
         LIMIT @limit
         
         """
@@ -383,20 +381,20 @@ class ArangoSession:
             AQL += """
             RETURN { 
                 id: doc.id,
-                date_added: doc._record_modified,
-                _record_modified: doc._record_modified,
-                version: doc.modified or doc.created,
+                date_added: doc._record_created,
+                _record_created: doc._record_created,
+                version: doc.modified or doc.created or doc._record_created,
             }
             """
         elif req_type == "objects":
             AQL += """
-            RETURN KEEP(doc, PUSH(ATTRIBUTES(doc, true), "_record_modified"))
+            RETURN KEEP(doc, PUSH(ATTRIBUTES(doc, true), "_record_created"))
             """
         else:
             raise ArangoError(500, f"unknown request type: {req_type}")
         retval["query"] = AQL
         # print(json.dumps(binding))
-        # print(AQL)
+        # print(AQL, json.dumps(binding))
         return retval
 
     @classmethod

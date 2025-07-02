@@ -90,7 +90,7 @@ added_after_query = OpenApiParameter(
     type=Datetime,
     description=dedent(
         """
-    A single timestamp that filters objects to only include those objects added after the specified timestamp. This filter considers the `modified` time in an object if exists, else it considers the stix2arango `_record_modified` time. The value of this parameter is a timestamp. In the format `YYYY-MM-DDThh:mm:ss.sssZ`
+    A single timestamp that filters objects to only include those objects added after the specified timestamp. This filter considers the `modified` time in an object if exists, else it considers the stix2arango `_record_created` time. The value of this parameter is a timestamp. In the format `YYYY-MM-DDThh:mm:ss.sssZ`
     """
     ),
 )
@@ -153,7 +153,7 @@ match_version_query = OpenApiParameter(
     - `<modified>`: requests a specific version of an object. For example: `2016-01-01T00:00:00.000Z` tells the server to give you the exact STIX object with a
     `modified` time of `2016-01-01T00:00:00.000Z`.
 
-    Note, for objects with a `modified` time, this value will be considered as the version. For objects without a `modified` time, the stix2arango `_record_modified` value will be used to determine version.
+    Note, for objects with a `modified` time, this value will be considered as the version. For objects without a `modified` time, the stix2arango `_record_created` value will be used to determine version.
     """
     ),
     style="form",
