@@ -4,11 +4,14 @@ build-backend = "hatchling.build"
 
 [project]
 name = "arango_taxii_server"
-version = "0.0.3"
+version = "1.0.0"
 authors = [
-  { name="DOGESEC", email="support@dogesec.com" },
+  { name = "dogesec" }
 ]
-description = "Arango Taxii Server"
+maintainers = [
+  { name = "dogesec" }
+]
+description = "A lightweight TAXII API wrapper for ArangoDB."
 readme = "README.md"
 requires-python = ">=3.9"
 classifiers = [
@@ -27,6 +30,7 @@ dependencies = [
 [project.urls]
 Homepage = "https://github.com/muchdogesec/arango_taxii_server"
 Issues = "https://github.com/muchdogesec/arango_taxii_server/issues"
+"dogesec HQ" = "https://dogesec.com"
 
 [project.optional-dependencies]
 full = [
