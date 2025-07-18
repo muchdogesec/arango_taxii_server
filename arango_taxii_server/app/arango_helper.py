@@ -8,12 +8,20 @@ from urllib.parse import urljoin, urlparse
 from datetime import datetime
 from .settings import arango_taxii_server_settings
 import requests
+from dateutil.parser import parse as parse_date
 
 from .. import conf
 
 COLLECTION_INFO_RE = re.compile(r"(\w+)_(vertex|edge)_collection")
 DB_NAME_RE = re.compile(r"(\w+)_database")
 
+
+def date_ts(date):
+    if not date:
+        return 0
+    if isinstance(date, str):
+        date = parse_date(date)
+    return date.timestamp() * 1_000_000
 
 class ArangoFullPermissionParser:
     permissions_map = {
@@ -285,6 +293,7 @@ class ArangoSession:
         )
         
         return resp
+    
 
     def build_query(self, collection, query_params, req_type="manifest"):
         _, ctype = self.split_collection_info(collection)
@@ -312,7 +321,7 @@ class ArangoSession:
         RETURN doc
         """
 
-        binding['added_after'] = query_params.get('added_after', '')
+        binding['added_after'] = date_ts(query_params.get('added_after', ''))
         version_filters = []
         match_versions = []
         match_version = list(set(query_params.get("match[version]", "last").split(",")))
