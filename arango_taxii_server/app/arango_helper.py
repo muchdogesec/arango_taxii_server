@@ -315,6 +315,7 @@ class ArangoSession:
         collection_query = """
         FOR doc IN @@collection OPTIONS {indexHint: "taxii_search", forceIndexHint: true}
         FILTER doc._record_created > @added_after
+        // skip_embedded
         // [MORE_FILTERS]
         SORT doc._record_created ASC
         LIMIT @limit
@@ -376,7 +377,7 @@ class ArangoSession:
             {collection_query.replace("@@collection", "@@vertex_collection")}
         )
         LET edges = (
-            {collection_query.replace("@@collection", "@@edge_collection")}
+            {collection_query.replace("@@collection", "@@edge_collection").replace('// skip_embedded', 'FILTER doc._is_ref != TRUE')}
         )
 
         FOR doc in UNION(vertices, edges)
