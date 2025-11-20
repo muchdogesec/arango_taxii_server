@@ -30,8 +30,6 @@ services:
         env_file:
             - ./.env
         depends_on:
-            pgdb:
-                condition: service_healthy
             redis:
                 condition: service_started
     celery:
@@ -49,22 +47,6 @@ services:
         depends_on:
             - django
             - redis
-    pgdb:
-        image: postgres
-        container_name: pgdb
-        env_file:
-          - ./.env
-
-        volumes:
-            - pgdata:/var/lib/postgresql/data/
-        healthcheck:
-            test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
-            interval: 10s
-            retries: 5
-            start_period: 10s
-            timeout: 10s
-        ports:
-            - 5432:5432
     redis:
         image: "redis:alpine"
 volumes:
