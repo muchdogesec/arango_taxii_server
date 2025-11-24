@@ -9,41 +9,36 @@ services:
             - .:/usr/src/app
         env_file:
             - ./.env
-
-    django:
-        extends: env_django
-        image: arango_taxii_server
-        container_name: django
         command: >
-                bash -c "python manage.py makemigrations &&
-                            python manage.py migrate && 
-                            gunicorn arango_taxii_server.wsgi:application --bind 0.0.0.0:8009 --reload
-                        "
-        volumes:
-            - .:/usr/src/app/
-        ports:
-            - 8009:8009
-        environment:
-            - DEBUG=
-            - DJANGO_ALLOWED_HOSTS=*
-            - CELERY_BROKER_URL=redis://redis:6379/0
-        env_file:
-            - ./.env
-        depends_on:
-            redis:
-                condition: service_started
-    celery:
-        extends: env_django
-        image: arango_taxii_server
-        command: >
-                bash -c "
-                  celery -A arango_taxii_server worker -l INFO
-                  "
+            bash -c "
+                python manage.py makemigrations &&
+                    python manage.py migrate
+                "
         environment:
             - DEBUG=1
             - DJANGO_ALLOWED_HOSTS=localhost 127.0.0.1 [::1]
             - CELERY_BROKER_URL=redis://redis:6379/0
             - result_backend=redis://redis:6379/1
+    django:
+        extends: env_django
+        image: arango_taxii_server
+        container_name: django
+        command: gunicorn arango_taxii_server.wsgi:application --bind 0.0.0.0:8009 --reload
+        volumes:
+            - .:/usr/src/app/
+        ports:
+            - 8009:8009
+        env_file:
+            - ./.env
+        depends_on:
+            redis:
+                condition: service_started
+            env_django:
+                condition: service_completed_successfully
+    celery:
+        extends: env_django
+        image: arango_taxii_server
+        command: celery -A arango_taxii_server worker -l INFO
         depends_on:
             - django
             - redis
