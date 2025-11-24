@@ -49,5 +49,3 @@ services:
             - redis
     redis:
         image: "redis:alpine"
-volumes:
-    pgdata:
