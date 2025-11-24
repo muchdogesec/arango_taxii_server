@@ -8,12 +8,6 @@
 
 Arango TAXII Server is a production ready implementation of a TAXII 2.1 Server designed to work with ArangoDB.
 
-## tl;dr
-
-[![Arango TAXII Server](https://img.youtube.com/vi/tYWOy-S457s/0.jpg)](https://www.youtube.com/watch?v=tYWOy-S457s)
-
-[Watch the demo](https://www.youtube.com/watch?v=tYWOy-S457s).
-
 ## Install
 
 ### Download and configure
@@ -23,6 +17,12 @@ Arango TAXII Server is a production ready implementation of a TAXII 2.1 Server d
 git clone https://github.com/muchdogesec/arango_taxii_server
 cd arango_taxii_server
 ```
+
+### Pre-requisites
+
+**IMPORTANT**: ArangoDB and Postgres must be running. These are not deployed in the compose file.
+
+If you are not sure what you are doing here, [follow the basic setup steps here](https://community.dogesec.com/t/best-way-to-create-databases-for-obstracts/153/2).
 
 ### Configuration options
 
