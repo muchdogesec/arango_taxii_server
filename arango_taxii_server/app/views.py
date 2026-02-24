@@ -305,7 +305,14 @@ class CollectionView(ArangoView, viewsets.ViewSet):
     )
     def retrieve(self, request: Request, api_root="", collection_id=""):
         db: arango_helper.ArangoSession = get_arango_session(self)
-        collection = db.get_collection(api_root, collection_id)
+        collections = arango_taxii_server_settings.FILTER_COLLECTIONS(self, db.get_collections(api_root))
+        collections = [c for c in collections if c["id"] == collection_id]
+        if not collections:
+            return ErrorResp(
+                404,
+                "The API Root or Collection ID are not found, or the client does not have access to this collection resource.",
+            )
+        collection = collections[0]
         s = serializers.SingleCollectionSerializer(data=collection)
         s.is_valid()
         return Response(s.data)
