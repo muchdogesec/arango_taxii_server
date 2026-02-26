@@ -15,7 +15,7 @@ ARANGO_TAXII_DEFAULTS: dict[str, any] = {
     'MAX_CONTENT_LENGTH': 10*1024*1024, #10 MiB
     'DEFAULT_PAGINATION_LIMIT': 50,
     'MAX_PAGINATION_LIMIT': 200,
-    'SUPPORT_WRITE_OPERATIONS': True,
+    'SUPPORT_WRITE_OPERATIONS': False,
     'ARANGODB_HOST_URL': None,
     'AUTHENTICATION_CLASSES': ["arango_taxii_server.app.authentication.ArangoServerAuthentication",],
     'PERMISSION_CLASSES': ['arango_taxii_server.app.views.APIRootAuthentication'],
