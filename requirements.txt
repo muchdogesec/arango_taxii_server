@@ -43,7 +43,7 @@ django==5.2.16
     #   drf-spectacular
 django-cors-headers==4.7.0
     # via arango_taxii_server (pyproject.toml)
-djangorestframework==3.16.0
+djangorestframework==3.17.2
     # via
     #   arango_taxii_server (pyproject.toml)
     #   drf-spectacular
